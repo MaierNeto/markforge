@@ -15,7 +15,27 @@ permissions:
   contents: write
 
 jobs:
+  smoke-test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Instalar jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Baixar Pandoc e Typst (sidecars)
+        run: bash scripts/ci/fetch-sidecars-linux.sh
+
+      - name: Smoke test do pipeline de exportação (Pandoc + Typst)
+        run: |
+          TARGET=$(rustc -vV | grep 'host:' | sed 's/host: //')
+          bash scripts/smoke-test-export.sh "src-tauri/binaries/pandoc-$TARGET" "src-tauri/binaries/typst-$TARGET"
+
   build:
+    needs: smoke-test
     strategy:
       fail-fast: false
       matrix:
@@ -33,7 +53,7 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf file build-essential curl wget
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf file build-essential curl wget jq
 
       - name: Instalar Rust
         uses: dtolnay/rust-toolchain@stable
@@ -53,6 +73,15 @@ jobs:
 
       - name: Gerar ícones do app
         run: npm run tauri icon build/icon.png
+
+      - name: Baixar Pandoc e Typst (sidecars) — Linux
+        if: matrix.platform == 'ubuntu-22.04'
+        run: bash scripts/ci/fetch-sidecars-linux.sh
+
+      - name: Baixar Pandoc e Typst (sidecars) — Windows
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: scripts/ci/fetch-sidecars-windows.ps1
 
       - name: Determinar tag/versão
         id: version
@@ -74,9 +103,8 @@ jobs:
           releaseBody: |
             Build automático do Markforge para Windows e Linux.
 
-            Requer Pandoc (obrigatório) e LibreOffice (opcional, apenas para
-            exportar PDF) instalados no sistema — veja o README para links de
-            instalação.
+            Pandoc e Typst já vêm embutidos no instalador — não é preciso
+            instalar nada separadamente para exportar DOCX/PDF.
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}

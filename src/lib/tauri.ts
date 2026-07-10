@@ -9,9 +9,7 @@ export interface FileNode {
 
 export interface DependencyStatus {
   pandoc: boolean;
-  pandoc_version: string | null;
-  soffice: boolean;
-  soffice_version: string | null;
+  typst: boolean;
 }
 
 export interface TemplateInfo {

@@ -15,7 +15,7 @@ jobs:
       - name: Instalar dependências do sistema
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf jq
 
       - name: Instalar Rust
         uses: dtolnay/rust-toolchain@stable
@@ -38,6 +38,14 @@ jobs:
 
       - name: Gerar ícones do app
         run: npm run tauri icon build/icon.png
+
+      - name: Baixar Pandoc e Typst (sidecars)
+        run: bash scripts/ci/fetch-sidecars-linux.sh
+
+      - name: Smoke test do pipeline de exportação (Pandoc + Typst)
+        run: |
+          TARGET=$(rustc -vV | grep 'host:' | sed 's/host: //')
+          bash scripts/smoke-test-export.sh "src-tauri/binaries/pandoc-$TARGET" "src-tauri/binaries/typst-$TARGET"
 
       - name: cargo check
         working-directory: src-tauri

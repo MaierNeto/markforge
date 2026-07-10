@@ -1,10 +1,11 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use tauri::Manager;
+use tauri_plugin_shell::process::Output;
+use tauri_plugin_shell::ShellExt;
 use uuid::Uuid;
 
-use super::deps::{pandoc_executable, soffice_executable};
 use super::templates::resolve_template_path;
 
 #[derive(Deserialize)]
@@ -46,12 +47,24 @@ pub struct ExportResult {
     warnings: Vec<String>,
 }
 
-/// Insere uma quebra de página OOXML logo após o bloco de front-matter,
-/// separando a "capa" (título/subtítulo/autor/data) do corpo do documento.
-fn with_cover_pagebreak(markdown: &str, include_cover: bool) -> String {
-    if !include_cover {
-        return markdown.to_string();
+/// Remove o bloco de front-matter YAML (usado quando "Incluir capa" está
+/// desmarcado, para que nenhum título/autor/data vaze no corpo do documento).
+fn strip_frontmatter(markdown: &str) -> String {
+    if let Some(rest) = markdown.strip_prefix("---\n") {
+        if let Some(end_idx) = rest.find("\n---\n") {
+            return rest[end_idx + 5..]
+                .trim_start_matches(['\n', '\r'])
+                .to_string();
+        }
     }
+    markdown.to_string()
+}
+
+/// Insere uma quebra de página OOXML logo após o front-matter, separando a
+/// "capa" (título/subtítulo/autor/data) do corpo — usado apenas no pipeline
+/// DOCX (o pipeline PDF/Typst cuida da quebra de página dentro do próprio
+/// template, via `has-cover`).
+fn with_cover_pagebreak_docx(markdown: &str) -> String {
     if let Some(rest) = markdown.strip_prefix("---\n") {
         if let Some(end_idx) = rest.find("\n---\n") {
             let front = &rest[..end_idx];
@@ -64,148 +77,183 @@ fn with_cover_pagebreak(markdown: &str, include_cover: bool) -> String {
     markdown.to_string()
 }
 
-fn write_temp_markdown(content: &str) -> Result<PathBuf, String> {
-    let dir = std::env::temp_dir().join(format!("markforge-{}", Uuid::new_v4()));
-    fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+fn write_temp_markdown(dir: &Path, content: &str) -> Result<PathBuf, String> {
     let path = dir.join("source.md");
     fs::write(&path, content).map_err(|e| e.to_string())?;
     Ok(path)
 }
 
-fn run_pandoc_to_docx(
-    pandoc_bin: &str,
-    md_path: &Path,
-    resource_path: &str,
-    reference_doc: &Path,
-    out_docx: &Path,
-) -> Result<(), String> {
-    let output = Command::new(pandoc_bin)
-        .arg(md_path)
-        .arg("--from")
-        .arg("markdown+yaml_metadata_block+raw_attribute")
-        .arg("--reference-doc")
-        .arg(reference_doc)
-        .arg("--resource-path")
-        .arg(resource_path)
-        .arg("--standalone")
-        .arg("-o")
-        .arg(out_docx)
-        .output()
-        .map_err(|e| format!("Falha ao executar o Pandoc: {e}"))?;
+fn check_output(context: &str, output: &Output) -> Result<(), String> {
     if !output.status.success() {
         return Err(format!(
-            "Pandoc retornou um erro:\n{}",
+            "{context}:\n{}",
             String::from_utf8_lossy(&output.stderr)
         ));
     }
     Ok(())
 }
 
-fn file_url(path: &Path) -> String {
-    let s = path.to_string_lossy().replace('\\', "/");
-    if let Some(stripped) = s.strip_prefix('/') {
-        format!("file:///{stripped}")
-    } else {
-        format!("file:///{s}")
-    }
+async fn run_pandoc_to_docx(
+    app: &tauri::AppHandle,
+    md_path: &Path,
+    resource_path: &str,
+    reference_doc: &Path,
+    out_docx: &Path,
+) -> Result<(), String> {
+    let cmd = app
+        .shell()
+        .sidecar("pandoc")
+        .map_err(|e| format!("Não foi possível localizar o Pandoc embutido: {e}"))?
+        .args([
+            md_path.as_os_str().to_string_lossy().to_string(),
+            "--from".into(),
+            "markdown+yaml_metadata_block+raw_attribute".into(),
+            "--reference-doc".into(),
+            reference_doc.as_os_str().to_string_lossy().to_string(),
+            "--resource-path".into(),
+            resource_path.to_string(),
+            "--standalone".into(),
+            "-o".into(),
+            out_docx.as_os_str().to_string_lossy().to_string(),
+        ]);
+    let output = cmd
+        .output()
+        .await
+        .map_err(|e| format!("Falha ao executar o Pandoc: {e}"))?;
+    check_output("Pandoc retornou um erro ao gerar o DOCX", &output)
 }
 
-fn run_soffice_to_pdf(soffice_bin: &str, docx_path: &Path, out_dir: &Path) -> Result<PathBuf, String> {
-    let profile_dir = std::env::temp_dir().join(format!("markforge-soffice-{}", Uuid::new_v4()));
-    let profile_arg = format!("-env:UserInstallation={}", file_url(&profile_dir));
-
-    let output = Command::new(soffice_bin)
-        .arg("--headless")
-        .arg("--norestore")
-        .arg(&profile_arg)
-        .arg("--convert-to")
-        .arg("pdf")
-        .arg("--outdir")
-        .arg(out_dir)
-        .arg(docx_path)
-        .output()
-        .map_err(|e| format!("Falha ao executar o LibreOffice: {e}"))?;
-
-    let _ = fs::remove_dir_all(&profile_dir);
-
-    if !output.status.success() {
+/// Resolve o caminho absoluto de um binário "sidecar" empacotado pelo Tauri.
+/// Sidecars (`externalBin`) são instalados sempre ao lado do executável
+/// principal do app, com o sufixo de target-triple removido — vale para
+/// .deb, AppImage, MSI e NSIS.
+fn sidecar_path(name: &str) -> Result<PathBuf, String> {
+    let exe = std::env::current_exe().map_err(|e| format!("Não foi possível localizar o executável do app: {e}"))?;
+    let dir = exe
+        .parent()
+        .ok_or_else(|| "Não foi possível localizar o diretório do executável".to_string())?;
+    let filename = if cfg!(windows) {
+        format!("{name}.exe")
+    } else {
+        name.to_string()
+    };
+    let path = dir.join(filename);
+    if !path.exists() {
         return Err(format!(
-            "LibreOffice retornou um erro:\n{}",
-            String::from_utf8_lossy(&output.stderr)
+            "Binário embutido '{name}' não encontrado em {} — a instalação pode estar corrompida.",
+            path.display()
         ));
     }
+    Ok(path)
+}
 
-    let stem = docx_path
-        .file_stem()
-        .ok_or_else(|| "Nome de arquivo DOCX inválido".to_string())?
+async fn run_pandoc_to_pdf(
+    app: &tauri::AppHandle,
+    md_path: &Path,
+    resource_path: &str,
+    pdf_template: &Path,
+    include_cover: bool,
+    out_pdf: &Path,
+) -> Result<(), String> {
+    let typst_path = sidecar_path("typst")?
+        .as_os_str()
         .to_string_lossy()
         .to_string();
-    let pdf_path = out_dir.join(format!("{stem}.pdf"));
-    if !pdf_path.exists() {
-        return Err("A conversão para PDF não gerou o arquivo esperado.".into());
+
+    let mut args: Vec<String> = vec![
+        md_path.as_os_str().to_string_lossy().to_string(),
+        "--from".into(),
+        "markdown+yaml_metadata_block".into(),
+        "--template".into(),
+        pdf_template.as_os_str().to_string_lossy().to_string(),
+        "--resource-path".into(),
+        resource_path.to_string(),
+        "--pdf-engine".into(),
+        typst_path,
+        "-o".into(),
+        out_pdf.as_os_str().to_string_lossy().to_string(),
+    ];
+    if include_cover {
+        args.push("--metadata".into());
+        args.push("has-cover:true".into());
     }
-    Ok(pdf_path)
+
+    let cmd = app
+        .shell()
+        .sidecar("pandoc")
+        .map_err(|e| format!("Não foi possível localizar o Pandoc embutido: {e}"))?
+        .args(args);
+    let output = cmd
+        .output()
+        .await
+        .map_err(|e| format!("Falha ao executar o Pandoc/Typst: {e}"))?;
+    check_output("Falha ao gerar o PDF (Pandoc + Typst)", &output)
+}
+
+fn resolve_pdf_template(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    app.path()
+        .resolve(
+            "templates/default/pdf-template.typ",
+            tauri::path::BaseDirectory::Resource,
+        )
+        .map_err(|e| format!("Template de PDF não encontrado: {e}"))
 }
 
 #[tauri::command]
-pub fn export_document(app: tauri::AppHandle, options: ExportOptions) -> Result<ExportResult, String> {
-    let pandoc_bin = pandoc_executable()?;
+pub async fn export_document(
+    app: tauri::AppHandle,
+    options: ExportOptions,
+) -> Result<ExportResult, String> {
     let reference_doc = resolve_template_path(&app, &options.template_id)?;
     if !reference_doc.exists() {
         return Err(format!(
-            "Template não encontrado em {}",
+            "Template DOCX não encontrado em {}",
             reference_doc.display()
         ));
     }
+    let pdf_template = resolve_pdf_template(&app)?;
 
     let normalized = options.markdown.replace("\r\n", "\n");
-    let content = with_cover_pagebreak(&normalized, options.include_cover);
-    let tmp_md = write_temp_markdown(&content)?;
-    let tmp_dir = tmp_md
-        .parent()
-        .ok_or_else(|| "Falha ao preparar arquivo temporário".to_string())?
-        .to_path_buf();
+
+    let tmp_dir = std::env::temp_dir().join(format!("markforge-{}", Uuid::new_v4()));
+    fs::create_dir_all(&tmp_dir).map_err(|e| e.to_string())?;
 
     let output_dir = PathBuf::from(&options.output_dir);
-    fs::create_dir_all(&output_dir).map_err(|e| format!("Não foi possível usar a pasta de destino: {e}"))?;
+    fs::create_dir_all(&output_dir)
+        .map_err(|e| format!("Não foi possível usar a pasta de destino: {e}"))?;
 
     let mut result = ExportResult::default();
-    let needs_docx_in_output = matches!(options.format, ExportFormat::Docx | ExportFormat::Both);
 
-    let docx_target = if needs_docx_in_output {
-        output_dir.join(format!("{}.docx", options.file_stem))
-    } else {
-        tmp_dir.join(format!("{}.docx", options.file_stem))
-    };
-
-    run_pandoc_to_docx(
-        &pandoc_bin,
-        &tmp_md,
-        &options.source_dir,
-        &reference_doc,
-        &docx_target,
-    )?;
-
-    if needs_docx_in_output {
+    if matches!(options.format, ExportFormat::Docx | ExportFormat::Both) {
+        let content = if options.include_cover {
+            with_cover_pagebreak_docx(&normalized)
+        } else {
+            strip_frontmatter(&normalized)
+        };
+        let md_path = write_temp_markdown(&tmp_dir, &content)?;
+        let docx_target = output_dir.join(format!("{}.docx", options.file_stem));
+        run_pandoc_to_docx(&app, &md_path, &options.source_dir, &reference_doc, &docx_target).await?;
         result.docx_path = Some(docx_target.to_string_lossy().to_string());
     }
 
     if matches!(options.format, ExportFormat::Pdf | ExportFormat::Both) {
-        let soffice_bin = soffice_executable()?;
-        let pdf_out_dir = if needs_docx_in_output {
-            output_dir.clone()
+        let content = if options.include_cover {
+            normalized.clone()
         } else {
-            tmp_dir.clone()
+            strip_frontmatter(&normalized)
         };
-        let generated_pdf = run_soffice_to_pdf(&soffice_bin, &docx_target, &pdf_out_dir)?;
-        let final_pdf = output_dir.join(format!("{}.pdf", options.file_stem));
-        if generated_pdf != final_pdf {
-            if fs::rename(&generated_pdf, &final_pdf).is_err() {
-                fs::copy(&generated_pdf, &final_pdf)
-                    .map_err(|e| format!("Não foi possível mover o PDF gerado: {e}"))?;
-            }
-        }
-        result.pdf_path = Some(final_pdf.to_string_lossy().to_string());
+        let md_path = write_temp_markdown(&tmp_dir, &content)?;
+        let pdf_target = output_dir.join(format!("{}.pdf", options.file_stem));
+        run_pandoc_to_pdf(
+            &app,
+            &md_path,
+            &options.source_dir,
+            &pdf_template,
+            options.include_cover,
+            &pdf_target,
+        )
+        .await?;
+        result.pdf_path = Some(pdf_target.to_string_lossy().to_string());
     }
 
     let _ = fs::remove_dir_all(&tmp_dir);

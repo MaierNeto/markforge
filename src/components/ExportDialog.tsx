@@ -40,8 +40,9 @@ export function ExportDialog({ onClose }: ExportDialogProps) {
   if (!openDoc) return null;
 
   const fileStem = openDoc.path.split(/[\\/]/).pop()?.replace(/\.md$/i, "") ?? "documento";
-  const pandocMissing = deps && !deps.pandoc;
-  const sofficeMissing = deps && !deps.soffice;
+  // Pandoc/Typst vêm embutidos no app — só ficam "faltando" se a instalação
+  // estiver corrompida, o que é bem raro.
+  const installCorrupted = deps && (!deps.pandoc || !deps.typst);
 
   async function pickOutputDir() {
     const selected = await open({ directory: true, multiple: false, defaultPath: outputDir ?? undefined });
@@ -84,21 +85,13 @@ export function ExportDialog({ onClose }: ExportDialogProps) {
           <button className="mf-icon-btn" onClick={onClose}>✕</button>
         </div>
 
-        {deps && (pandocMissing || sofficeMissing) && (
+        {installCorrupted && (
           <div className="mf-warning">
-            {pandocMissing && (
-              <p>
-                <strong>Pandoc não encontrado.</strong> Instale o Pandoc para
-                exportar (site oficial: pandoc.org/installing.html).
-              </p>
-            )}
-            {!pandocMissing && sofficeMissing && (
-              <p>
-                <strong>LibreOffice não encontrado.</strong> A exportação para
-                PDF requer o LibreOffice instalado (libreoffice.org). DOCX
-                continua disponível.
-              </p>
-            )}
+            <p>
+              <strong>Algo não está certo na instalação do Markforge.</strong>{" "}
+              Os componentes internos de exportação não foram encontrados —
+              tente reinstalar o aplicativo.
+            </p>
           </div>
         )}
 
@@ -108,8 +101,8 @@ export function ExportDialog({ onClose }: ExportDialogProps) {
               <span>Formato</span>
               <select value={format} onChange={(e) => setFormat(e.target.value as ExportFormat)}>
                 <option value="docx">DOCX</option>
-                <option value="pdf" disabled={!!sofficeMissing}>PDF</option>
-                <option value="both" disabled={!!sofficeMissing}>DOCX + PDF</option>
+                <option value="pdf">PDF</option>
+                <option value="both">DOCX + PDF</option>
               </select>
             </label>
             <label className="mf-field">
@@ -176,7 +169,7 @@ export function ExportDialog({ onClose }: ExportDialogProps) {
           <button className="mf-btn-secondary" onClick={onClose}>Cancelar</button>
           <button
             className="mf-btn-primary"
-            disabled={busy || !outputDir || !!pandocMissing}
+            disabled={busy || !outputDir || !!installCorrupted}
             onClick={handleExport}
           >
             {busy ? "Exportando…" : "Exportar"}
