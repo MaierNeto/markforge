@@ -1,0 +1,20 @@
+/* Ajustes finos do tema Crepe (Milkdown) para casar com a identidade do Markforge */
+.mf-editor .milkdown {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--mf-gray-800);
+}
+
+.mf-editor .milkdown h1,
+.mf-editor .milkdown h2,
+.mf-editor .milkdown h3 {
+  color: var(--mf-navy-800);
+}
+
+.mf-editor .milkdown blockquote {
+  border-left: 3px solid var(--mf-amber-500);
+}
+
+.mf-editor .milkdown a {
+  color: var(--mf-navy-600);
+}

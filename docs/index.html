@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Markforge — Editor visual para Markdown, com exportação DOCX/PDF</title>
+<meta name="description" content="Markforge é um editor WYSIWYG open source para arquivos .md, com exportação para DOCX e PDF a partir de templates com capa, cabeçalho e rodapé." />
+<style>
+  :root {
+    --navy-900: #101c2e;
+    --navy-800: #16273f;
+    --navy-700: #1f3a5f;
+    --navy-600: #2c517f;
+    --amber-500: #e8a33d;
+    --amber-400: #f5c478;
+    --gray-50: #f7f8fa;
+    --gray-100: #eef0f3;
+    --gray-200: #dde1e7;
+    --gray-400: #9aa3b0;
+    --gray-600: #5b6472;
+    --gray-800: #232830;
+    --radius: 12px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    color: var(--gray-800);
+    background: #fff;
+  }
+  a { color: inherit; }
+  .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  header.nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(16, 28, 46, 0.92);
+    backdrop-filter: blur(6px);
+    color: #fff;
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
+  .nav-mark {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--amber-500); color: var(--navy-900);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px;
+  }
+  .nav-links { display: flex; gap: 24px; font-size: 14px; }
+  .nav-links a { text-decoration: none; color: var(--gray-200); }
+  .nav-links a:hover { color: #fff; }
+
+  .hero {
+    background: radial-gradient(1200px 500px at 20% -10%, #23406a 0%, transparent 60%), linear-gradient(160deg, var(--navy-900), var(--navy-700));
+    color: #fff;
+    padding: 90px 0 100px;
+  }
+  .hero-inner { display: flex; align-items: center; gap: 56px; }
+  .hero-copy { flex: 1.1; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12.5px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    background: rgba(232, 163, 61, 0.15);
+    color: var(--amber-400);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-size: 44px;
+    line-height: 1.15;
+    margin: 0 0 18px;
+    letter-spacing: -0.5px;
+  }
+  h1 span { color: var(--amber-400); }
+  .hero-copy p.lead {
+    font-size: 17px;
+    line-height: 1.6;
+    color: #cfd8e4;
+    max-width: 520px;
+    margin: 0 0 32px;
+  }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 22px;
+    border-radius: 9px;
+    font-weight: 600;
+    font-size: 14.5px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--amber-500); color: var(--navy-900); }
+  .btn-primary:hover { background: var(--amber-400); }
+  .btn-ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,0.3); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.08); }
+  .hero-note { margin-top: 16px; font-size: 12.5px; color: var(--gray-400); }
+
+  .hero-visual {
+    flex: 1;
+    background: #0d1826;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 40px 80px rgba(0,0,0,0.45);
+    overflow: hidden;
+  }
+  .mock-topbar {
+    background: var(--navy-800);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .mock-dot { width: 9px; height: 9px; border-radius: 50%; background: #465269; }
+  .mock-body { display: flex; height: 260px; }
+  .mock-sidebar { width: 34%; background: #0f1c2e; padding: 14px 10px; font-size: 11px; color: #8b96a8; }
+  .mock-sidebar div { padding: 6px 8px; border-radius: 5px; margin-bottom: 3px; }
+  .mock-sidebar div.active { background: var(--amber-500); color: var(--navy-900); font-weight: 700; }
+  .mock-main { flex: 1; background: #fff; padding: 20px 22px; }
+  .mock-title { height: 16px; width: 60%; background: var(--navy-700); border-radius: 4px; margin-bottom: 14px; }
+  .mock-line { height: 8px; background: var(--gray-200); border-radius: 4px; margin-bottom: 9px; }
+  .mock-line.w80 { width: 80%; } .mock-line.w95 { width: 95%; } .mock-line.w60 { width: 60%; }
+  .mock-chip { display: inline-block; background: var(--gray-100); border-radius: 4px; padding: 5px 10px; font-size: 10px; color: var(--gray-600); margin-top: 10px; margin-right: 6px; }
+
+  section { padding: 84px 0; }
+  .section-head { text-align: center; max-width: 620px; margin: 0 auto 52px; }
+  .section-head .eyebrow { background: var(--gray-100); color: var(--navy-700); }
+  .section-head h2 { font-size: 30px; margin: 0 0 12px; color: var(--navy-900); }
+  .section-head p { color: var(--gray-600); font-size: 15px; line-height: 1.6; }
+
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  .feature-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 26px 22px;
+  }
+  .feature-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    background: var(--navy-700); color: var(--amber-400);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; margin-bottom: 16px;
+  }
+  .feature-card h3 { font-size: 16.5px; margin: 0 0 8px; color: var(--navy-900); }
+  .feature-card p { font-size: 13.8px; color: var(--gray-600); line-height: 1.6; margin: 0; }
+
+  .how { background: var(--gray-50); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; counter-reset: step; }
+  .step { position: relative; padding-left: 4px; }
+  .step .num {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--navy-800); color: var(--amber-400);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; margin-bottom: 14px;
+  }
+  .step h3 { font-size: 15.5px; margin: 0 0 6px; color: var(--navy-900); }
+  .step p { font-size: 13.5px; color: var(--gray-600); line-height: 1.6; margin: 0; }
+
+  .download-panel {
+    background: linear-gradient(135deg, var(--navy-800), var(--navy-700));
+    border-radius: 20px;
+    color: #fff;
+    padding: 56px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .download-panel h2 { font-size: 26px; margin: 0 0 10px; }
+  .download-panel p { color: var(--gray-400); font-size: 14px; max-width: 420px; margin: 0; }
+  .download-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+  .platform-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-decoration: none;
+    color: #fff;
+    min-width: 168px;
+    text-align: left;
+  }
+  .platform-btn:hover { background: rgba(255,255,255,0.12); }
+  .platform-btn .plat { font-weight: 700; font-size: 14.5px; display: block; margin-bottom: 3px; }
+  .platform-btn .sub { font-size: 12px; color: var(--gray-400); }
+
+  .deps { padding-top: 0; }
+  .deps table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .deps th, .deps td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--gray-200); }
+  .deps th { color: var(--gray-600); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .deps a { color: var(--navy-700); font-weight: 600; text-decoration: none; }
+  .deps a:hover { text-decoration: underline; }
+
+  footer {
+    background: var(--navy-900);
+    color: var(--gray-400);
+    padding: 40px 0;
+    font-size: 13px;
+  }
+  .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  footer a { color: var(--gray-200); text-decoration: none; margin-left: 18px; }
+  footer a:hover { color: #fff; }
+
+  @media (max-width: 860px) {
+    .hero-inner { flex-direction: column; }
+    .features, .steps { grid-template-columns: 1fr; }
+    h1 { font-size: 32px; }
+    .download-panel { padding: 36px 26px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="nav-mark">M</span> Markforge</div>
+    <nav class="nav-links">
+      <a href="#recursos">Recursos</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#download">Download</a>
+      <a href="https://github.com/MaierNeto/markforge">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-copy">
+      <span class="eyebrow">Open source · Windows &amp; Linux</span>
+      <h1>Edite arquivos <span>Markdown</span> visualmente. Exporte documentos <span>prontos</span>.</h1>
+      <p class="lead">
+        Markforge é um editor WYSIWYG para arquivos <code>.md</code>, feito para
+        times que documentam projetos guiados por agentes de IA. Edite como no
+        Notion, salve como Markdown puro, e exporte para DOCX/PDF com capa,
+        cabeçalho e rodapé — sem tocar em uma linha de sintaxe.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#download">Baixar Markforge</a>
+        <a class="btn btn-ghost" href="https://github.com/MaierNeto/markforge">Ver código-fonte</a>
+      </div>
+      <p class="hero-note">Gratuito e open source, licença Apache 2.0.</p>
+    </div>
+    <div class="hero-visual">
+      <div class="mock-topbar">
+        <div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div>
+      </div>
+      <div class="mock-body">
+        <div class="mock-sidebar">
+          <div>📂 docs/</div>
+          <div class="active">📄 plano-arquitetura.md</div>
+          <div>📄 decisoes.md</div>
+          <div>📄 changelog.md</div>
+          <div>📂 specs/</div>
+        </div>
+        <div class="mock-main">
+          <div class="mock-title"></div>
+          <div class="mock-line w95"></div>
+          <div class="mock-line w80"></div>
+          <div class="mock-line w60"></div>
+          <span class="mock-chip">✔ tabela</span>
+          <span class="mock-chip">✔ checklist</span>
+          <span class="mock-chip">✔ capa DOCX/PDF</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="recursos">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Recursos</span>
+      <h2>Feito para documentação viva de projetos</h2>
+      <p>Tudo o que você precisa para manter arquivos de controle em Markdown legíveis por humanos e por agentes de IA — e ainda assim entregar documentos formais quando for preciso.</p>
+    </div>
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">✎</div>
+        <h3>WYSIWYG, tipo Notion</h3>
+        <p>Formatação por atalhos, menu "/" e barra de ferramentas. Sem ver <code>##</code> ou <code>**negrito**</code> — mas o arquivo salvo continua sendo Markdown puro.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⇄</div>
+        <h3>.md como fonte da verdade</h3>
+        <p>Nada de formato proprietário. Compatível com Git, GitHub, Claude Code e qualquer ferramenta que já leia os seus arquivos de controle.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗂</div>
+        <h3>Projeto inteiro</h3>
+        <p>Abra a raiz do repositório e navegue pela árvore de arquivos <code>.md</code> — crie, renomeie e organize sem sair do app.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">▤</div>
+        <h3>Templates com capa</h3>
+        <p>Título, subtítulo, autor e data viram uma capa formal. Cabeçalho e rodapé (com numeração de página) em todas as demais páginas.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⇩</div>
+        <h3>Exporta DOCX e PDF</h3>
+        <p>Usa Pandoc e LibreOffice por baixo — ferramentas abertas e confiáveis — para gerar documentos consistentes entre os dois formatos.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">◧</div>
+        <h3>Templates da sua marca</h3>
+        <p>Importe um <code>.docx</code> de referência com a identidade visual da sua empresa e use-o em qualquer exportação.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="como-funciona" class="how">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Como funciona</span>
+      <h2>Do Markdown ao documento final</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>Abra a pasta do projeto</h3>
+        <p>O Markforge escaneia a árvore de arquivos e mostra todos os <code>.md</code> do repositório na barra lateral.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>Edite visualmente</h3>
+        <p>Cada alteração é salva automaticamente de volta como Markdown puro — o mesmo arquivo que seus agentes de IA continuam lendo e escrevendo.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>Exporte com template</h3>
+        <p>Escolha DOCX, PDF ou os dois, com ou sem capa, e o Markforge gera o documento final com cabeçalho, rodapé e numeração de página.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="download">
+  <div class="container">
+    <div class="download-panel">
+      <div>
+        <h2>Baixe o Markforge</h2>
+        <p>Instaladores para Windows e Linux, publicados automaticamente a cada release no GitHub.</p>
+      </div>
+      <div class="download-buttons">
+        <a class="platform-btn" href="https://github.com/MaierNeto/markforge/releases/latest">
+          <span class="plat">🪟 Windows</span>
+          <span class="sub">.exe / .msi — ver releases</span>
+        </a>
+        <a class="platform-btn" href="https://github.com/MaierNeto/markforge/releases/latest">
+          <span class="plat">🐧 Linux</span>
+          <span class="sub">.deb / .AppImage — ver releases</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="deps">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Antes de exportar</span>
+      <h2>Duas dependências, ambas open source</h2>
+      <p>A edição visual funciona sem instalar nada além do Markforge. Para exportar DOCX/PDF, instale:</p>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Ferramenta</th><th>Necessária para</th><th>Onde baixar</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Pandoc</td>
+          <td>Exportar DOCX e PDF</td>
+          <td><a href="https://pandoc.org/installing.html">pandoc.org/installing.html</a></td>
+        </tr>
+        <tr>
+          <td>LibreOffice</td>
+          <td>Exportar PDF (opcional)</td>
+          <td><a href="https://www.libreoffice.org/download/download/">libreoffice.org/download</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <div class="container footer-inner">
+    <span>© 2026 Markforge · Apache License 2.0</span>
+    <div>
+      <a href="https://github.com/MaierNeto/markforge">GitHub</a>
+      <a href="https://github.com/MaierNeto/markforge/releases">Releases</a>
+      <a href="https://github.com/MaierNeto/markforge/issues">Issues</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
