@@ -6,15 +6,27 @@
 // opcao "Incluir capa" esta marcada -- assim o comportamento fica identico
 // ao pipeline DOCX.
 //
-// A linha abaixo traz os helpers padrao do Pandoc (blockquote,
-// horizontalrule, endnote, etc.) que o writer typst pressupoe existirem.
-$definitions.typst()$
+// Helpers que o writer typst do Pandoc pressupõe existirem (blockquote,
+// horizontalrule, endnote). Antes usávamos a variável de template do Pandoc
+// que expande os "definitions" typst embutidos no binário do Pandoc — mas
+// versões mais novas do Pandoc (>= 3.x recentes) deixaram de embutir esse
+// arquivo de dados interno, e a chamada passa a falhar em tempo de execução
+// com "Could not find data file templates slash definitions dot typst".
+// Por isso agora definimos essas funções estaticamente aqui, sem depender
+// do Pandoc resolver nada em disco.
+#let horizontalrule = [
+  #line(start: (25%,0%), end: (75%,0%))
+]
+
+#let endnote(num, contents) = [
+  #stack(dir: ltr, spacing: 3pt, super[#num], contents)
+]
 
 #let ACCENT = rgb("#1F3A5F")
 #let MUTED = rgb("#6B7280")
 
-// Sobrescreve o "blockquote" padrão do Pandoc com o estilo do Markforge
-// (borda esquerda âmbar em vez do recuo simples).
+// Nosso próprio "blockquote" (borda esquerda âmbar em vez do recuo padrão
+// do Pandoc).
 #let blockquote(body) = block(
   inset: (left: 1em),
   stroke: (left: 3pt + rgb("#E8A33D")),
