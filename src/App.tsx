@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { listen } from "@tauri-apps/api/event";
+import { api } from "@/lib/tauri";
 import { useProjectStore } from "@/store/projectStore";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { FileTree } from "@/components/FileTree";
@@ -13,10 +15,29 @@ export default function App() {
   const rootPath = useProjectStore((s) => s.rootPath);
   const openDoc = useProjectStore((s) => s.openDoc);
   const updateBody = useProjectStore((s) => s.updateBody);
+  const openSingleFile = useProjectStore((s) => s.openSingleFile);
   const [exportOpen, setExportOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
 
-  if (!rootPath) {
+  // Abre o arquivo passado ao iniciar (associação de .md) e escuta pedidos de
+  // abertura vindos de uma segunda instância (duplo-clique com o app já aberto).
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    api
+      .takeStartupFile()
+      .then((path) => {
+        if (path) openSingleFile(path);
+      })
+      .catch(() => {});
+    listen<string>("open-file", (event) => {
+      if (event.payload) openSingleFile(event.payload);
+    }).then((fn) => {
+      unlisten = fn;
+    });
+    return () => unlisten?.();
+  }, [openSingleFile]);
+
+  if (!rootPath && !openDoc) {
     return <WelcomeScreen />;
   }
 

@@ -168,7 +168,42 @@
   color: var(--mf-gray-400);
 }
 
+.mf-welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+/* Botão secundário sobre o card branco do welcome precisa de borda visível
+   (o estilo padrão foi feito para fundo escuro). */
+.mf-welcome-actions .mf-btn-secondary {
+  color: var(--mf-navy-800);
+  border: 1px solid var(--mf-gray-200);
+}
+.mf-welcome-actions .mf-btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
 /* ---------- file tree ---------- */
+.mf-include-folder-btn {
+  display: block;
+  width: calc(100% - 12px);
+  margin: 10px 6px 0;
+  padding: 8px 10px;
+  background: transparent;
+  color: var(--mf-gray-400);
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  border-radius: 6px;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.mf-include-folder-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+}
+
 .mf-tree-empty {
   padding: 16px;
   font-size: 13px;

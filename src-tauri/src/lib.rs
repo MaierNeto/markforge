@@ -1,17 +1,28 @@
 mod commands;
 
-use commands::{deps, export, fs_commands, templates};
+use std::sync::Mutex;
+
+use commands::startup::{first_markdown_arg, StartupFile};
+use commands::{deps, export, fs_commands, startup, templates};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let mut builder = tauri::Builder::default();
+    // Arquivo passado na linha de comando (ex.: duplo-clique num .md associado
+    // ao Markforge) — consumido pelo frontend na inicialização.
+    let startup_file = first_markdown_arg(&std::env::args().collect::<Vec<_>>());
+
+    let mut builder = tauri::Builder::default().manage(StartupFile(Mutex::new(startup_file)));
 
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     {
-        builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            use tauri::Manager;
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            use tauri::{Emitter, Manager};
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.set_focus();
+            }
+            // App já aberto e o usuário abriu outro .md: encaminha para a UI.
+            if let Some(path) = first_markdown_arg(&args) {
+                let _ = app.emit("open-file", path);
             }
         }));
     }
@@ -34,6 +45,7 @@ pub fn run() {
             templates::import_template,
             templates::delete_template,
             export::export_document,
+            startup::take_startup_file,
         ])
         .run(tauri::generate_context!())
         .expect("erro ao iniciar o Markforge");
