@@ -11,7 +11,12 @@ src-tauri/gen/
 src-tauri/icons/*.png
 src-tauri/icons/*.ico
 src-tauri/icons/*.icns
+src-tauri/icons/android/
+src-tauri/icons/ios/
 !src-tauri/icons/.gitkeep
+
+# Sidecars (Pandoc + Typst) — baixados no build via scripts/ci/fetch-sidecars-*
+src-tauri/binaries/
 
 # Editor / OS
 .vscode/*
