@@ -23,10 +23,12 @@ const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
 
 function unquote(value: string): string {
   const v = value.trim();
-  if (
-    (v.startsWith('"') && v.endsWith('"')) ||
-    (v.startsWith("'") && v.endsWith("'"))
-  ) {
+  // Aspas duplas: desfaz o escape \" que quoteIfNeeded() aplica na
+  // serialização (sem isto, cada ciclo parse∘serialize acumula barras).
+  if (v.length >= 2 && v.startsWith('"') && v.endsWith('"')) {
+    return v.slice(1, -1).replace(/\\"/g, '"');
+  }
+  if (v.length >= 2 && v.startsWith("'") && v.endsWith("'")) {
     return v.slice(1, -1);
   }
   return v;
@@ -54,7 +56,10 @@ export function parseDocument(raw: string): ParsedDocument {
       metadata[m[1]] = unquote(m[2]);
     }
   }
-  const body = raw.slice(match[0].length);
+  // Apara a linha em branco separadora após o bloco de front-matter, para o
+  // body ficar consistente com serializeDocument() e com o lado Rust
+  // (strip_frontmatter), que já removem os newlines iniciais.
+  const body = raw.slice(match[0].length).replace(/^\r?\n+/, "");
   return { metadata, body, hasFrontmatter: true };
 }
 

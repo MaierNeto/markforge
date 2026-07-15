@@ -260,3 +260,42 @@ pub async fn export_document(
 
     Ok(result)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{strip_frontmatter, with_cover_pagebreak_docx};
+
+    #[test]
+    fn strip_frontmatter_remove_bloco_e_apara_corpo() {
+        let md = "---\ntitle: T\nauthor: W\n---\n\n# Corpo\n";
+        assert_eq!(strip_frontmatter(md), "# Corpo\n");
+    }
+
+    #[test]
+    fn strip_frontmatter_sem_bloco_retorna_intacto() {
+        let md = "# Só o corpo\n\ntexto";
+        assert_eq!(strip_frontmatter(md), md);
+    }
+
+    #[test]
+    fn strip_frontmatter_ignora_hifens_no_meio_do_texto() {
+        // "--- com hífens" no corpo não pode ser confundido com o fim do bloco.
+        let md = "---\ntitle: T\n---\n\ntexto --- com hifens\n";
+        assert_eq!(strip_frontmatter(md), "texto --- com hifens\n");
+    }
+
+    #[test]
+    fn with_cover_pagebreak_insere_quebra_apos_frontmatter() {
+        let md = "---\ntitle: T\n---\n\n# Corpo\n";
+        let out = with_cover_pagebreak_docx(md);
+        assert!(out.starts_with("---\ntitle: T\n---\n\n```{=openxml}"));
+        assert!(out.contains("<w:br w:type=\"page\"/>"));
+        assert!(out.trim_end().ends_with("# Corpo"));
+    }
+
+    #[test]
+    fn with_cover_pagebreak_sem_frontmatter_inalterado() {
+        let md = "# Corpo sem capa\n";
+        assert_eq!(with_cover_pagebreak_docx(md), md);
+    }
+}
