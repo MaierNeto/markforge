@@ -36,6 +36,9 @@ jobs:
       - name: Type-check + build do frontend
         run: npm run build
 
+      - name: Testes do frontend (Vitest)
+        run: npm test
+
       - name: Gerar ícones do app
         run: npm run tauri icon build/icon.png
 
@@ -50,3 +53,7 @@ jobs:
       - name: cargo check
         working-directory: src-tauri
         run: cargo check
+
+      - name: Testes unitários (Rust)
+        working-directory: src-tauri
+        run: cargo test --lib
