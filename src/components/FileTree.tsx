@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FileNode } from "@/lib/tauri";
+import { basename } from "@/lib/paths";
 import { useProjectStore } from "@/store/projectStore";
 
 interface NodeProps {
@@ -120,12 +121,27 @@ export function FileTree() {
   const tree = useProjectStore((s) => s.tree);
   const openDoc = useProjectStore((s) => s.openDoc);
   const openFile = useProjectStore((s) => s.openFile);
+  const includeFolder = useProjectStore((s) => s.includeFolder);
   const loading = useProjectStore((s) => s.loadingTree);
 
   if (loading) {
     return <div className="mf-tree-empty">Carregando arquivos…</div>;
   }
+  // Modo arquivo único: sem árvore carregada, mas com um documento aberto.
   if (!tree) {
+    if (openDoc) {
+      return (
+        <div className="mf-tree">
+          <div className="mf-tree-file active" title={openDoc.path}>
+            <span className="mf-tree-icon">📄</span>
+            <span className="mf-tree-label">{basename(openDoc.path)}</span>
+          </div>
+          <button className="mf-include-folder-btn" onClick={() => includeFolder()}>
+            + Incluir a pasta deste arquivo
+          </button>
+        </div>
+      );
+    }
     return <div className="mf-tree-empty">Nenhuma pasta aberta.</div>;
   }
   const children = tree.children ?? [];

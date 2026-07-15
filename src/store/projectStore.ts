@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { api, FileNode } from "@/lib/tauri";
 import { parseDocument, serializeDocument, DocMetadata } from "@/lib/frontmatter";
+import { dirname, isInside } from "@/lib/paths";
 
 interface OpenDocument {
   path: string;
@@ -18,6 +19,8 @@ interface ProjectState {
   error: string | null;
 
   openFolder: (path: string) => Promise<void>;
+  openSingleFile: (path: string) => Promise<void>;
+  includeFolder: () => Promise<void>;
   refreshTree: () => Promise<void>;
   openFile: (path: string) => Promise<void>;
   closeFile: () => void;
@@ -50,9 +53,52 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
   },
 
-  async refreshTree() {
+  // Abre um arquivo .md avulso (botão "Abrir arquivo" ou associação de .md no
+  // SO). Se o arquivo já pertence ao projeto aberto, apenas o seleciona
+  // mantendo a árvore; caso contrário entra em "modo arquivo único" — a pasta
+  // fica conhecida (rootPath = pasta do arquivo) mas a árvore só é carregada
+  // quando o usuário clica em "Incluir pasta".
+  async openSingleFile(path: string) {
+    const { tree, rootPath, openDoc } = get();
+    if (openDoc?.dirty) {
+      await get().saveCurrentFile();
+    }
+    if (tree && rootPath && isInside(rootPath, path)) {
+      await get().openFile(path);
+      return;
+    }
+    try {
+      const raw = await api.readFile(path);
+      const { metadata, body } = parseDocument(raw);
+      set({
+        rootPath: dirname(path),
+        tree: null,
+        openDoc: { path, metadata, body, dirty: false },
+        saveStatus: "idle",
+        error: null,
+      });
+    } catch (e) {
+      set({ error: String(e) });
+    }
+  },
+
+  // Carrega a árvore da pasta que contém o arquivo aberto, sem fechar o
+  // documento atual (transição de "arquivo único" para "projeto").
+  async includeFolder() {
     const { rootPath } = get();
     if (!rootPath) return;
+    set({ loadingTree: true, error: null });
+    try {
+      const tree = await api.listMarkdownTree(rootPath);
+      set({ tree, loadingTree: false });
+    } catch (e) {
+      set({ error: String(e), loadingTree: false });
+    }
+  },
+
+  async refreshTree() {
+    const { rootPath, tree } = get();
+    if (!rootPath || !tree) return;
     try {
       const tree = await api.listMarkdownTree(rootPath);
       set({ tree });

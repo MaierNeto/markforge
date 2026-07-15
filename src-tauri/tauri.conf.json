@@ -38,6 +38,15 @@
       "../templates/default/pdf-template.typ": "templates/default/pdf-template.typ"
     },
     "externalBin": ["binaries/pandoc", "binaries/typst"],
+    "fileAssociations": [
+      {
+        "ext": ["md", "markdown"],
+        "name": "Documento Markdown",
+        "description": "Arquivo Markdown",
+        "mimeType": "text/markdown",
+        "role": "Editor"
+      }
+    ],
     "shortDescription": "Editor visual para Markdown com exportação DOCX/PDF",
     "longDescription": "Markforge é um editor WYSIWYG para arquivos Markdown (.md) que preserva o texto puro como fonte da verdade e permite exportar documentos DOCX e PDF prontos, com capa, cabeçalho e rodapé configuráveis por template. Pandoc e Typst vêm embutidos no aplicativo — nenhuma instalação adicional é necessária.",
     "category": "Productivity",

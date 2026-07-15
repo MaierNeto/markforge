@@ -85,4 +85,7 @@ export const api = {
   openPath(path: string): Promise<void> {
     return invoke("open_in_file_manager", { path });
   },
+  takeStartupFile(): Promise<string | null> {
+    return invoke("take_startup_file");
+  },
 };
