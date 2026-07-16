@@ -1,7 +1,7 @@
 {
   "name": "markforge",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Editor visual (WYSIWYG) para arquivos Markdown, com exportação para DOCX e PDF a partir de templates com capa, cabeçalho e rodapé.",
   "author": "Walter Maier Neto",
