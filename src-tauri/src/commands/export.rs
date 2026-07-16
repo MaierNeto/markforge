@@ -77,6 +77,15 @@ fn with_cover_pagebreak_docx(markdown: &str) -> String {
     markdown.to_string()
 }
 
+/// Decide se o PDF deve incluir a página de capa. Regra de produto: a capa só
+/// entra quando há um template customizado selecionado — o template padrão
+/// embutido não carrega identidade visual de capa, então gerar uma capa
+/// genérica no PDF fica pior do que não ter. (No DOCX a capa segue valendo
+/// para o template padrão; essa regra é só do PDF.)
+fn pdf_should_include_cover(include_cover: bool, template_id: &str) -> bool {
+    include_cover && template_id != "default"
+}
+
 fn write_temp_markdown(dir: &Path, content: &str) -> Result<PathBuf, String> {
     let path = dir.join("source.md");
     fs::write(&path, content).map_err(|e| e.to_string())?;
@@ -275,7 +284,8 @@ pub async fn export_document(
     }
 
     if matches!(options.format, ExportFormat::Pdf | ExportFormat::Both) {
-        let content = if options.include_cover {
+        let pdf_cover = pdf_should_include_cover(options.include_cover, &options.template_id);
+        let content = if pdf_cover {
             normalized.clone()
         } else {
             strip_frontmatter(&normalized)
@@ -288,7 +298,7 @@ pub async fn export_document(
             &md_path,
             &options.source_dir,
             &pdf_template,
-            options.include_cover,
+            pdf_cover,
             &typst_path,
             &pdf_target,
         )
@@ -337,5 +347,23 @@ mod tests {
     fn with_cover_pagebreak_sem_frontmatter_inalterado() {
         let md = "# Corpo sem capa\n";
         assert_eq!(with_cover_pagebreak_docx(md), md);
+    }
+
+    use super::pdf_should_include_cover;
+
+    #[test]
+    fn pdf_capa_suprimida_no_template_padrao() {
+        assert!(!pdf_should_include_cover(true, "default"));
+    }
+
+    #[test]
+    fn pdf_capa_incluida_com_template_customizado() {
+        assert!(pdf_should_include_cover(true, "abc-123-uuid"));
+    }
+
+    #[test]
+    fn pdf_sem_capa_quando_opcao_desmarcada() {
+        assert!(!pdf_should_include_cover(false, "abc-123-uuid"));
+        assert!(!pdf_should_include_cover(false, "default"));
     }
 }
