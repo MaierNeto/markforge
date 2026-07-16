@@ -3,6 +3,7 @@ import { useProjectStore } from "@/store/projectStore";
 interface TopBarProps {
   onExport: () => void;
   onManageTemplates: () => void;
+  onOpenSettings: () => void;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -12,7 +13,7 @@ const STATUS_LABEL: Record<string, string> = {
   error: "Erro ao salvar",
 };
 
-export function TopBar({ onExport, onManageTemplates }: TopBarProps) {
+export function TopBar({ onExport, onManageTemplates, onOpenSettings }: TopBarProps) {
   const openDoc = useProjectStore((s) => s.openDoc);
   const rootPath = useProjectStore((s) => s.rootPath);
   const saveStatus = useProjectStore((s) => s.saveStatus);
@@ -28,6 +29,9 @@ export function TopBar({ onExport, onManageTemplates }: TopBarProps) {
       </div>
       <div className="mf-topbar-actions">
         {openDoc && <span className="mf-save-status">{STATUS_LABEL[saveStatus]}</span>}
+        <button className="mf-btn-secondary" onClick={onOpenSettings} title="Configurações">
+          Configurações
+        </button>
         <button className="mf-btn-secondary" onClick={onManageTemplates}>
           Templates
         </button>

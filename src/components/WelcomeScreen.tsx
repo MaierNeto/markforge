@@ -1,7 +1,11 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { useProjectStore } from "@/store/projectStore";
 
-export function WelcomeScreen() {
+interface WelcomeScreenProps {
+  onOpenSettings: () => void;
+}
+
+export function WelcomeScreen({ onOpenSettings }: WelcomeScreenProps) {
   const openFolder = useProjectStore((s) => s.openFolder);
   const openSingleFile = useProjectStore((s) => s.openSingleFile);
 
@@ -44,6 +48,9 @@ export function WelcomeScreen() {
           do repositório e edite os arquivos <code>.md</code> com uma interface
           visual, sem perder a compatibilidade com o texto puro.
         </p>
+        <button className="mf-welcome-settings" onClick={onOpenSettings}>
+          Configurações e associação de arquivos
+        </button>
       </div>
     </div>
   );
