@@ -68,6 +68,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       return;
     }
     try {
+      // Autoriza a pasta do arquivo antes de ler: o backend só opera dentro
+      // das raízes que o usuário abriu.
+      await api.allowFile(path);
       const raw = await api.readFile(path);
       const { metadata, body } = parseDocument(raw);
       set({
