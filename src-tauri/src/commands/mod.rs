@@ -3,3 +3,4 @@ pub mod export;
 pub mod fs_commands;
 pub mod startup;
 pub mod templates;
+pub mod win_assoc;

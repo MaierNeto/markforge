@@ -45,6 +45,17 @@ export interface ExportResult {
   warnings: string[];
 }
 
+export interface ExtAssoc {
+  ext: string;
+  associated: boolean;
+  handler: string | null;
+}
+
+export interface ContextMenuStatus {
+  files: boolean;
+  folders: boolean;
+}
+
 export const api = {
   listMarkdownTree(root: string): Promise<FileNode> {
     return invoke("list_markdown_tree", { root });
@@ -87,5 +98,23 @@ export const api = {
   },
   takeStartupFile(): Promise<string | null> {
     return invoke("take_startup_file");
+  },
+  assocSupported(): Promise<boolean> {
+    return invoke("assoc_supported");
+  },
+  getAssociationStatus(): Promise<ExtAssoc[]> {
+    return invoke("get_association_status");
+  },
+  setAssociation(ext: string, associate: boolean): Promise<void> {
+    return invoke("set_association", { ext, associate });
+  },
+  getContextMenuStatus(): Promise<ContextMenuStatus> {
+    return invoke("get_context_menu_status");
+  },
+  setContextMenu(files: boolean, folders: boolean): Promise<void> {
+    return invoke("set_context_menu", { files, folders });
+  },
+  openDefaultAppsSettings(): Promise<void> {
+    return invoke("open_default_apps_settings");
   },
 };

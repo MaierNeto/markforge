@@ -185,6 +185,69 @@
   background: rgba(0, 0, 0, 0.04);
 }
 
+.mf-welcome-settings {
+  margin-top: 16px;
+  background: transparent;
+  border: none;
+  color: var(--mf-gray-400);
+  font-size: 12.5px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.mf-welcome-settings:hover { color: var(--mf-navy-700); }
+
+/* ---------- settings dialog ---------- */
+.mf-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--mf-gray-200);
+}
+.mf-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--mf-gray-600);
+  cursor: pointer;
+}
+.mf-tab.active {
+  color: var(--mf-navy-800);
+  border-bottom-color: var(--mf-amber-500);
+  font-weight: 600;
+}
+
+.mf-assoc-list {
+  list-style: none;
+  margin: 12px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mf-assoc-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--mf-gray-200);
+  border-radius: var(--mf-radius);
+}
+.mf-assoc-ext {
+  font-family: ui-monospace, monospace;
+  font-weight: 600;
+  min-width: 84px;
+  color: var(--mf-navy-800);
+}
+.mf-assoc-state {
+  flex: 1;
+  font-size: 12.5px;
+  color: var(--mf-gray-600);
+}
+.mf-assoc-state.on { color: #1f7a44; font-weight: 600; }
+.mf-assoc-default { margin-top: 14px; }
+
 /* ---------- file tree ---------- */
 .mf-include-folder-btn {
   display: block;

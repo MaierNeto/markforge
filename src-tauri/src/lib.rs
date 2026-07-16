@@ -3,7 +3,7 @@ mod commands;
 use std::sync::Mutex;
 
 use commands::startup::{first_markdown_arg, StartupFile};
-use commands::{deps, export, fs_commands, startup, templates};
+use commands::{deps, export, fs_commands, startup, templates, win_assoc};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -46,6 +46,12 @@ pub fn run() {
             templates::delete_template,
             export::export_document,
             startup::take_startup_file,
+            win_assoc::assoc_supported,
+            win_assoc::get_association_status,
+            win_assoc::set_association,
+            win_assoc::get_context_menu_status,
+            win_assoc::set_context_menu,
+            win_assoc::open_default_apps_settings,
         ])
         .run(tauri::generate_context!())
         .expect("erro ao iniciar o Markforge");
