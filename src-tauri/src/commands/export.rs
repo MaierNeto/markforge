@@ -147,19 +147,57 @@ fn sidecar_path(name: &str) -> Result<PathBuf, String> {
     Ok(path)
 }
 
+/// Resolve um caminho para o binário do Typst cujo *nome* seja exatamente
+/// "typst[.exe]" — exigência do Pandoc para aceitar `--pdf-engine`. Em produção
+/// o sidecar já é instalado com esse nome ao lado do executável; em `tauri dev`
+/// o binário cru mora em `src-tauri/binaries/` com o sufixo de target-triple
+/// (que o Pandoc rejeita), então o copiamos para o diretório temporário com o
+/// nome puro. Assim dev e produção passam pelo mesmo caminho de PDF.
+// Em release (sem debug_assertions) o bloco de dev some e `tmp_dir` não é
+// usado — esperado.
+#[cfg_attr(not(debug_assertions), allow(unused_variables))]
+fn resolve_typst_for_pandoc(tmp_dir: &Path) -> Result<PathBuf, String> {
+    // Produção: ao lado do executável, já com o nome "puro".
+    if let Ok(path) = sidecar_path("typst") {
+        return Ok(path);
+    }
+
+    // Dev (debug): binaries/typst-<triple>[.exe] — precisa do nome puro.
+    #[cfg(debug_assertions)]
+    {
+        let triple = tauri::utils::platform::target_triple()
+            .map_err(|e| format!("Não foi possível detectar o target triple: {e}"))?;
+        let raw_name = if cfg!(windows) {
+            format!("typst-{triple}.exe")
+        } else {
+            format!("typst-{triple}")
+        };
+        let src = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("binaries")
+            .join(&raw_name);
+        if src.exists() {
+            let dest = tmp_dir.join(if cfg!(windows) { "typst.exe" } else { "typst" });
+            fs::copy(&src, &dest)
+                .map_err(|e| format!("Não foi possível preparar o Typst para o Pandoc: {e}"))?;
+            return Ok(dest);
+        }
+    }
+
+    Err(
+        "Binário embutido do Typst não encontrado — a instalação pode estar corrompida."
+            .to_string(),
+    )
+}
+
 async fn run_pandoc_to_pdf(
     app: &tauri::AppHandle,
     md_path: &Path,
     resource_path: &str,
     pdf_template: &Path,
     include_cover: bool,
+    typst_path: &Path,
     out_pdf: &Path,
 ) -> Result<(), String> {
-    let typst_path = sidecar_path("typst")?
-        .as_os_str()
-        .to_string_lossy()
-        .to_string();
-
     let mut args: Vec<String> = vec![
         md_path.as_os_str().to_string_lossy().to_string(),
         "--from".into(),
@@ -169,7 +207,7 @@ async fn run_pandoc_to_pdf(
         "--resource-path".into(),
         resource_path.to_string(),
         "--pdf-engine".into(),
-        typst_path,
+        typst_path.as_os_str().to_string_lossy().to_string(),
         "-o".into(),
         out_pdf.as_os_str().to_string_lossy().to_string(),
     ];
@@ -243,6 +281,7 @@ pub async fn export_document(
             strip_frontmatter(&normalized)
         };
         let md_path = write_temp_markdown(&tmp_dir, &content)?;
+        let typst_path = resolve_typst_for_pandoc(&tmp_dir)?;
         let pdf_target = output_dir.join(format!("{}.pdf", options.file_stem));
         run_pandoc_to_pdf(
             &app,
@@ -250,6 +289,7 @@ pub async fn export_document(
             &options.source_dir,
             &pdf_template,
             options.include_cover,
+            &typst_path,
             &pdf_target,
         )
         .await?;
