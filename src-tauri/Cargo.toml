@@ -1,6 +1,8 @@
 [package]
 name = "markforge"
-version = "0.1.0"
+# Fonte única da versão do produto: tauri.conf.json herda daqui e o CI falha se
+# a tag da release divergir deste número.
+version = "0.2.0"
 description = "Editor visual (WYSIWYG) para arquivos Markdown, com exportação para DOCX e PDF."
 authors = ["Walter Maier Neto"]
 edition = "2021"
