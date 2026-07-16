@@ -91,6 +91,11 @@ contra um documento de teste) e, se passar, compila os instaladores para
 Windows e Linux via [tauri-action](https://github.com/tauri-apps/tauri-action),
 publicando uma release no GitHub com os artefatos anexados.
 
+## Roadmap e mudanças
+
+- O que já mudou, versão a versão: [CHANGELOG.md](CHANGELOG.md).
+- O que está na fila, o que está parado e por quê: [ROADMAP.md](ROADMAP.md).
+
 ## Licença
 
 [Apache License 2.0](LICENSE).
