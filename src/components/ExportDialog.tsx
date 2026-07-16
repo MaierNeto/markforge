@@ -121,6 +121,15 @@ export function ExportDialog({ onClose }: ExportDialogProps) {
             <span>Incluir página de capa (título, subtítulo, autor, data)</span>
           </label>
 
+          {includeCover &&
+            templateId === "default" &&
+            (format === "pdf" || format === "both") && (
+              <p className="mf-metadata-hint">
+                A capa no PDF só é gerada com um template customizado. No template
+                padrão, a capa vale apenas para o DOCX.
+              </p>
+            )}
+
           {includeCover && (
             <div className="mf-cover-fields">
               <label className="mf-field">
