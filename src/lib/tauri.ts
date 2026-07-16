@@ -99,6 +99,9 @@ export const api = {
   takeStartupFile(): Promise<string | null> {
     return invoke("take_startup_file");
   },
+  allowFile(path: string): Promise<void> {
+    return invoke("allow_file", { path });
+  },
   assocSupported(): Promise<boolean> {
     return invoke("assoc_supported");
   },

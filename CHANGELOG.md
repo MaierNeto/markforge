@@ -39,6 +39,16 @@ versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 - **Exportação de PDF em ambiente de desenvolvimento** falhava por não localizar
   o Typst (o app instalado não era afetado).
 
+### Segurança
+
+- **O acesso a arquivos agora se limita às pastas abertas no Markforge.** Um
+  documento não alcança nada fora do projeto que você abriu: qualquer caminho
+  fora das pastas abertas é recusado.
+- **A interface passa a rodar sob uma política de conteúdo restritiva**, de modo
+  que o conteúdo de um documento não execute código no aplicativo.
+
+Recomendamos atualizar a partir das versões 0.1.x.
+
 ## [0.1.1] - 2026-07-11
 
 ### Adicionado
