@@ -262,49 +262,69 @@ mod tests {
         is_inside(Path::new(root), Path::new(target))
     }
 
+    // Os casos abaixo usam separador POSIX de propósito: o Rust também o aceita
+    // como separador no Windows, então valem nas duas plataformas. O que é
+    // genuinamente específico do Windows (letra de unidade, barra invertida,
+    // maiúsculas) fica no módulo `windows` no fim.
+
     #[test]
     fn aceita_arquivo_dentro_da_raiz() {
-        assert!(inside("C:\\proj", "C:\\proj\\doc.md"));
+        assert!(inside("/home/w/proj", "/home/w/proj/doc.md"));
         assert!(inside("/home/w/proj", "/home/w/proj/sub/doc.md"));
     }
 
     #[test]
     fn aceita_a_propria_raiz() {
-        assert!(inside("C:\\proj", "C:\\proj"));
+        assert!(inside("/home/w/proj", "/home/w/proj"));
     }
 
     #[test]
     fn recusa_caminho_fora_da_raiz() {
-        assert!(!inside("C:\\proj", "C:\\Windows\\System32"));
         assert!(!inside("/home/w/proj", "/etc/passwd"));
     }
 
     #[test]
     fn recusa_prefixo_que_nao_e_fronteira_de_pasta() {
         // "projeto" apenas começa com "proj" — não está dentro dele.
-        assert!(!inside("C:\\proj", "C:\\projeto\\doc.md"));
         assert!(!inside("/home/w/proj", "/home/w/projeto/doc.md"));
     }
 
     #[test]
     fn recusa_escape_por_dot_dot() {
-        assert!(!inside("C:\\proj", "C:\\proj\\..\\outro\\doc.md"));
         assert!(!inside("/home/w/proj", "/home/w/proj/../../etc/passwd"));
+        assert!(!inside("/home/w/proj", "/home/w/proj/../outro/doc.md"));
     }
 
     #[test]
     fn aceita_dot_dot_que_permanece_dentro() {
-        assert!(inside("C:\\proj", "C:\\proj\\sub\\..\\doc.md"));
+        assert!(inside("/home/w/proj", "/home/w/proj/sub/../doc.md"));
     }
 
     #[test]
     fn raiz_vazia_nao_autoriza_nada() {
-        assert!(!inside("", "C:\\qualquer\\coisa.md"));
+        assert!(!inside("", "/qualquer/coisa.md"));
     }
 
     #[cfg(windows)]
-    #[test]
-    fn no_windows_ignora_maiusculas() {
-        assert!(inside("C:\\Proj", "c:\\proj\\doc.md"));
+    mod windows {
+        use super::inside;
+
+        #[test]
+        fn aceita_caminho_com_barra_invertida_e_unidade() {
+            assert!(inside("C:\\proj", "C:\\proj\\doc.md"));
+            assert!(inside("C:\\proj", "C:\\proj\\sub\\..\\doc.md"));
+        }
+
+        #[test]
+        fn recusa_fora_da_raiz_com_barra_invertida() {
+            assert!(!inside("C:\\proj", "C:\\Windows\\System32"));
+            assert!(!inside("C:\\proj", "C:\\projeto\\doc.md"));
+            assert!(!inside("C:\\proj", "C:\\proj\\..\\outro\\doc.md"));
+        }
+
+        #[test]
+        fn ignora_maiusculas() {
+            assert!(inside("C:\\Proj", "c:\\proj\\doc.md"));
+        }
     }
 }
