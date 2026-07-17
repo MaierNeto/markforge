@@ -29,7 +29,8 @@ Baixe o instalador da sua plataforma na [página de releases](../../releases/lat
 e pronto — Pandoc e Typst já vêm dentro do instalador, não é preciso instalar
 mais nada:
 
-- **Windows:** `Markforge_x.y.z_x64-setup.exe` (ou `.msi`)
+- **Windows:** `Markforge_x.y.z_x64-setup.exe` — instala para o seu usuário, sem
+  pedir privilégios de administrador
 - **Linux:** `markforge_x.y.z_amd64.deb` ou `markforge_x.y.z_amd64.AppImage`
 
 ## Como funciona a exportação

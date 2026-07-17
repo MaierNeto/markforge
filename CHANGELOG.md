@@ -24,6 +24,11 @@ versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
 ### Alterado
 
+- **O Windows passa a ter um instalador único** (`.exe`), que instala para o seu
+  usuário e não pede privilégios de administrador. O pacote `.msi` foi
+  descontinuado: os dois instalavam em lugares diferentes, o que permitia ficar
+  com duas cópias do Markforge e a associação de arquivos apontando para a
+  errada.
 - **Capa do PDF agora só é gerada com um template customizado.** No template
   padrão o PDF sai sem página de capa, porque o padrão não carrega identidade
   visual e a capa genérica ficava pior do que não ter. No DOCX a capa continua
