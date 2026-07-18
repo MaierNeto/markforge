@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npm test --silent 2>&1 | tail -n 40"
+          }
+        ]
+      }
+    ]
+  }
+}
