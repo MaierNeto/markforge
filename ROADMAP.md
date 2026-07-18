@@ -7,6 +7,10 @@ O que já foi entregue está no [CHANGELOG.md](CHANGELOG.md).
 
 ## Agora
 
+- **Abertura em modo leitura.** Os documentos passam a abrir protegidos contra
+  alteração acidental. Um botão no topo libera a edição quando você quiser, e
+  será possível desfazer as alterações ou voltar o arquivo ao conteúdo com que
+  ele foi aberto nesta sessão.
 - **Instalador em português e inglês.** O aplicativo é em português, mas o
   assistente de instalação ainda aparece em inglês. Passará a ser gerado nos
   dois idiomas.
