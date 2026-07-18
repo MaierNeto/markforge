@@ -28,3 +28,8 @@ Thumbs.db
 # Testes locais
 /tmp-test-output/
 _to_delete/
+
+# Planejamento reservado — pesquisa, estratégia e hipóteses não validadas.
+# Nunca vai para o remoto, seja o repo público ou privado.
+ROADMAP-ESTRATEGICO.md
+*.reservado.md
