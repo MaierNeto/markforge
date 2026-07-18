@@ -65,9 +65,9 @@ describe("round-trip parse ∘ serialize", () => {
   });
 
   it("preserva um valor com dois-pontos", () => {
-    const meta = { title: "Aegis: SDLC" };
+    const meta = { title: "Relatório: Q3 2026" };
     const { metadata } = parseDocument(serializeDocument(meta, "corpo"));
-    expect(metadata.title).toBe("Aegis: SDLC");
+    expect(metadata.title).toBe("Relatório: Q3 2026");
   });
 
   it("preserva um valor que contém aspas duplas (não acumula escapes)", () => {
