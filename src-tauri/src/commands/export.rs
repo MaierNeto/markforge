@@ -116,7 +116,9 @@ async fn run_pandoc_to_docx(
         .args([
             md_path.as_os_str().to_string_lossy().to_string(),
             "--from".into(),
-            "markdown+yaml_metadata_block+raw_attribute".into(),
+            // -citations: "@algo" (pacote npm com escopo, menção, e-mail) é
+            // texto literal, não citação bibliográfica — ver run_pandoc_to_pdf.
+            "markdown+yaml_metadata_block+raw_attribute-citations".into(),
             "--reference-doc".into(),
             reference_doc.as_os_str().to_string_lossy().to_string(),
             "--resource-path".into(),
@@ -210,7 +212,9 @@ async fn run_pandoc_to_pdf(
     let mut args: Vec<String> = vec![
         md_path.as_os_str().to_string_lossy().to_string(),
         "--from".into(),
-        "markdown+yaml_metadata_block".into(),
+        // -citations: sem isto, o Pandoc trata "@algo" como citação e o Typst
+        // aborta por não haver bibliografia (ex.: @escopo/pacote em docs).
+        "markdown+yaml_metadata_block-citations".into(),
         "--template".into(),
         pdf_template.as_os_str().to_string_lossy().to_string(),
         "--resource-path".into(),

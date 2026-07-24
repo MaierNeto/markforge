@@ -11,6 +11,9 @@ Parágrafo com **negrito**, *itálico* e `código inline`.
 
 ## Lista e tabela
 
+Menção a um pacote com escopo: @escopo/pacote e um e-mail contato@exemplo.com
+devem sair como texto literal (não como citação bibliográfica).
+
 - Item um
 - Item dois
 
