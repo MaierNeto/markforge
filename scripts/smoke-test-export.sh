@@ -27,7 +27,7 @@ ln -s "$(cd "$(dirname "$TYPST_BIN")" && pwd)/$(basename "$TYPST_BIN")" "$TYPST_
 
 echo "==> Testando exportação DOCX (Pandoc + reference.docx)"
 "$PANDOC_BIN" "$FIXTURE" \
-  --from markdown+yaml_metadata_block+raw_attribute \
+  --from markdown+yaml_metadata_block+raw_attribute-citations \
   --reference-doc="$ROOT_DIR/templates/default/reference.docx" \
   --standalone \
   -o "$OUT_DIR/smoke.docx"
@@ -40,7 +40,7 @@ echo "OK: $(du -h "$OUT_DIR/smoke.docx" | cut -f1) — $OUT_DIR/smoke.docx"
 
 echo "==> Testando exportação PDF (Pandoc + Typst + pdf-template.typ)"
 "$PANDOC_BIN" "$FIXTURE" \
-  --from markdown+yaml_metadata_block \
+  --from markdown+yaml_metadata_block-citations \
   --template="$ROOT_DIR/templates/default/pdf-template.typ" \
   --pdf-engine="$TYPST_LINK" \
   --metadata has-cover:true \
