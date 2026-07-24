@@ -17,6 +17,9 @@ O que já foi entregue está no [CHANGELOG.md](CHANGELOG.md).
 
 ## Depois
 
+- **Aviso de nova versão.** O Markforge passa a avisar quando há uma atualização
+  disponível — você não precisa conferir manualmente. Você continua decidindo
+  quando instalar.
 - **Abrir a pasta do documento direto do diálogo de exportação**, sem precisar
   procurar o arquivo no Explorer.
 - **Salvamento garantido ao fechar a janela**, sem depender do intervalo do
