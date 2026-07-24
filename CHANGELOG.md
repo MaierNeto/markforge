@@ -6,6 +6,15 @@ produto — não despejo de commits.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/);
 versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.2.1]
+
+### Corrigido
+
+- **Textos com `@` (como `@escopo/pacote` ou um e-mail) agora exportam
+  corretamente.** Antes, um `@` seguido de palavra travava a geração do PDF e,
+  no DOCX, era removido silenciosamente — comum em documentação técnica que cita
+  pacotes ou menções.
+
 ## [0.2.0]
 
 ### Adicionado
@@ -77,6 +86,7 @@ Recomendamos atualizar a partir das versões 0.1.x.
   DOCX e PDF com capa, cabeçalho e rodapé, navegação pela árvore de arquivos do
   projeto, templates de exportação, landing page e CI/CD.
 
+[0.2.1]: https://github.com/MaierNeto/markforge/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/MaierNeto/markforge/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/MaierNeto/markforge/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/MaierNeto/markforge/releases/tag/v0.1.0
