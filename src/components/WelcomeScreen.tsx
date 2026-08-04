@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useProjectStore } from "@/store/projectStore";
-import { api } from "@/lib/tauri";
+import { dirname } from "@/lib/paths";
 
 interface WelcomeScreenProps {
   onOpenSettings: () => void;
@@ -10,8 +10,18 @@ interface WelcomeScreenProps {
 export function WelcomeScreen({ onOpenSettings }: WelcomeScreenProps) {
   const openFolder = useProjectStore((s) => s.openFolder);
   const openSingleFile = useProjectStore((s) => s.openSingleFile);
+  const importDocxFile = useProjectStore((s) => s.importDocxFile);
+  const recents = useProjectStore((s) => s.recents);
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+
+  function handleOpenRecent(entry: { path: string; kind: "folder" | "file" }) {
+    if (entry.kind === "folder") {
+      openFolder(entry.path);
+    } else {
+      openSingleFile(entry.path);
+    }
+  }
 
   async function handleOpenFolder() {
     const selected = await open({ directory: true, multiple: false });
@@ -39,8 +49,8 @@ export function WelcomeScreen({ onOpenSettings }: WelcomeScreenProps) {
     if (typeof selected !== "string") return;
     setImporting(true);
     try {
-      const mdPath = await api.importDocx(selected);
-      await openSingleFile(mdPath);
+      // Sem projeto aberto ainda: importa para a mesma pasta do .docx.
+      await importDocxFile(selected, dirname(selected));
     } catch (e) {
       setImportError(String(e));
     } finally {
@@ -69,6 +79,22 @@ export function WelcomeScreen({ onOpenSettings }: WelcomeScreenProps) {
           </button>
         </div>
         {importError && <div className="mf-error">{importError}</div>}
+        {recents.length > 0 && (
+          <div className="mf-welcome-recents">
+            <span className="mf-welcome-recents-title">Recentes</span>
+            {recents.map((entry) => (
+              <button
+                key={entry.path}
+                className="mf-welcome-recent-item"
+                title={entry.path}
+                onClick={() => handleOpenRecent(entry)}
+              >
+                <span>{entry.kind === "folder" ? "📂" : "📄"}</span>
+                {entry.label}
+              </button>
+            ))}
+          </div>
+        )}
         <p className="mf-welcome-hint">
           Ideal para pastas de controle de projetos com agentes de IA — abra a raiz
           do repositório e edite os arquivos <code>.md</code> com uma interface

@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { open, save } from "@tauri-apps/plugin-dialog";
 import { useProjectStore } from "@/store/projectStore";
 
 interface TopBarProps {
@@ -19,12 +21,51 @@ export function TopBar({ onExport, onManageTemplates, onOpenSettings }: TopBarPr
   const saveStatus = useProjectStore((s) => s.saveStatus);
   const toggleEditMode = useProjectStore((s) => s.toggleEditMode);
   const revertToSnapshot = useProjectStore((s) => s.revertToSnapshot);
+  const openFolder = useProjectStore((s) => s.openFolder);
+  const openSingleFile = useProjectStore((s) => s.openSingleFile);
+  const saveAs = useProjectStore((s) => s.saveAs);
+  const importDocxFile = useProjectStore((s) => s.importDocxFile);
+  const [openMenuVisible, setOpenMenuVisible] = useState(false);
 
   const relativePath =
     openDoc && rootPath ? openDoc.path.replace(rootPath, "").replace(/^[\\/]/, "") : "";
 
   const isReading = openDoc?.mode === "reading";
   const isDirty = openDoc?.dirty;
+
+  async function handleOpenAnotherFolder() {
+    setOpenMenuVisible(false);
+    const selected = await open({ directory: true, multiple: false });
+    if (typeof selected === "string") await openFolder(selected);
+  }
+
+  async function handleOpenAnotherFile() {
+    setOpenMenuVisible(false);
+    const selected = await open({
+      multiple: false,
+      filters: [{ name: "Markdown", extensions: ["md", "markdown"] }],
+    });
+    if (typeof selected === "string") await openSingleFile(selected);
+  }
+
+  async function handleImportDocx() {
+    setOpenMenuVisible(false);
+    if (!rootPath) return;
+    const selected = await open({
+      multiple: false,
+      filters: [{ name: "Word", extensions: ["docx"] }],
+    });
+    if (typeof selected === "string") await importDocxFile(selected, rootPath);
+  }
+
+  async function handleSaveAs() {
+    if (!openDoc) return;
+    const newPath = await save({
+      defaultPath: openDoc.path,
+      filters: [{ name: "Markdown", extensions: ["md", "markdown"] }],
+    });
+    if (newPath) await saveAs(newPath);
+  }
 
   return (
     <div className="mf-topbar">
@@ -51,6 +92,29 @@ export function TopBar({ onExport, onManageTemplates, onOpenSettings }: TopBarPr
             )}
           </>
         )}
+        {openDoc && (
+          <button className="mf-btn-secondary" onClick={handleSaveAs} title="Salvar como… (mover para outra pasta)">
+            Salvar como…
+          </button>
+        )}
+        <div className="mf-open-menu">
+          <button
+            className="mf-btn-secondary"
+            onClick={() => setOpenMenuVisible((v) => !v)}
+            title="Abrir outra pasta ou arquivo"
+          >
+            Abrir…
+          </button>
+          {openMenuVisible && (
+            <div className="mf-tree-menu mf-open-menu-list">
+              <button onClick={handleOpenAnotherFolder}>Abrir pasta…</button>
+              <button onClick={handleOpenAnotherFile}>Abrir arquivo .md…</button>
+              <button onClick={handleImportDocx} title="Importa para a raiz da pasta do projeto atual">
+                Importar .docx…
+              </button>
+            </div>
+          )}
+        </div>
         <button className="mf-btn-secondary" onClick={onOpenSettings} title="Configurações">
           Configurações
         </button>

@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { api, FileNode } from "@/lib/tauri";
 import { parseDocument, serializeDocument, DocMetadata } from "@/lib/frontmatter";
-import { dirname, isInside } from "@/lib/paths";
+import { dirname, isInside, basename } from "@/lib/paths";
+import { addRecent, loadRecents, saveRecents, RecentEntry } from "@/lib/recents";
 
 interface OpenDocument {
   path: string;
@@ -25,6 +26,7 @@ interface ProjectState {
   saveStatus: "idle" | "saving" | "saved" | "error";
   error: string | null;
   saveRawSnapshot: boolean; // flag para salvar o snapshot raw (após revert)
+  recents: RecentEntry[];
 
   openFolder: (path: string) => Promise<void>;
   openSingleFile: (path: string) => Promise<void>;
@@ -48,11 +50,18 @@ interface ProjectState {
   discardLocalAndReload: () => void;
   saveOverExternal: () => Promise<void>;
   saveAs: (newPath: string) => Promise<void>;
+  importDocxFile: (sourcePath: string, destDir: string) => Promise<string>;
   updateHashDisco: () => void;
   openExportFolder: (exportedFilePath: string) => Promise<void>;
   hasUnsavedChanges: () => boolean;
   handleCloseRequested: () => Promise<"close" | "show-dialog">;
   resolveClose: (choice: "save" | "discard" | "cancel") => Promise<"close" | "stay">;
+}
+
+function recordRecent(set: (partial: Partial<ProjectState>) => void, get: () => ProjectState, entry: RecentEntry) {
+  const updated = addRecent(get().recents, entry);
+  saveRecents(updated);
+  set({ recents: updated });
 }
 
 function isFileInTree(node: FileNode | null, targetPath: string): boolean {
@@ -74,12 +83,18 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   saveStatus: "idle",
   error: null,
   saveRawSnapshot: false,
+  recents: loadRecents(),
 
   async openFolder(path: string) {
-    set({ rootPath: path, loadingTree: true, error: null });
+    const { openDoc } = get();
+    if (openDoc?.dirty) {
+      await get().saveCurrentFile();
+    }
+    set({ rootPath: path, tree: null, openDoc: null, loadingTree: true, error: null, saveStatus: "idle" });
     try {
       const tree = await api.listMarkdownTree(path);
       set({ tree, loadingTree: false });
+      recordRecent(set, get, { path, kind: "folder", label: basename(path) });
     } catch (e) {
       set({ error: String(e), loadingTree: false });
     }
@@ -97,6 +112,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
     if (tree && rootPath && isInside(rootPath, path)) {
       await get().openFile(path);
+      recordRecent(set, get, { path, kind: "file", label: basename(path) });
       return;
     }
     try {
@@ -113,6 +129,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         saveStatus: "idle",
         error: null,
       });
+      recordRecent(set, get, { path, kind: "file", label: basename(path) });
     } catch (e) {
       set({ error: String(e) });
     }
@@ -440,6 +457,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     const doc = get().openDoc;
     if (!doc) return;
 
+    // O destino pode estar fora das pastas já abertas (é o ponto de "salvar
+    // como" para outro lugar) — autoriza antes de escrever.
+    await api.allowFile(newPath);
+
     const raw = serializeDocument(doc.metadata, doc.body);
     await api.writeFile(newPath, raw);
 
@@ -458,6 +479,18 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       },
       saveStatus: "saved",
     });
+  },
+
+  // Importa um .docx convertendo para .md dentro de destDir (pode ser a pasta
+  // do projeto aberto, diferente da pasta onde o .docx está) e abre o
+  // resultado. Atualiza a árvore se um projeto já estiver aberto.
+  async importDocxFile(sourcePath: string, destDir: string) {
+    const mdPath = await api.importDocx(sourcePath, destDir);
+    if (get().tree) {
+      await get().refreshTree();
+    }
+    await get().openSingleFile(mdPath);
+    return mdPath;
   },
 
   // Atualiza hashDisco após save próprio para evitar falso-positivo

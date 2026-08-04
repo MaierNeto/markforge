@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { confirm } from "@tauri-apps/plugin-dialog";
+import { confirm, open } from "@tauri-apps/plugin-dialog";
 import { FileNode } from "@/lib/tauri";
 import { basename } from "@/lib/paths";
 import { useProjectStore } from "@/store/projectStore";
@@ -14,7 +14,7 @@ interface NodeProps {
 
 function TreeNode({ node, depth, activePath, onOpenFile }: NodeProps) {
   const [expanded, setExpanded] = useState(true);
-  const { createFile, createFolder, renameEntry, deleteEntry } = useProjectStore();
+  const { createFile, createFolder, renameEntry, deleteEntry, importDocxFile } = useProjectStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const { promptText, promptDialog } = usePromptDialog();
 
@@ -77,6 +77,18 @@ function TreeNode({ node, depth, activePath, onOpenFile }: NodeProps) {
             }}
           >
             + Pasta
+          </button>
+          <button
+            onClick={async () => {
+              const selected = await open({
+                multiple: false,
+                filters: [{ name: "Word", extensions: ["docx"] }],
+              });
+              if (typeof selected === "string") await importDocxFile(selected, node.path);
+              setMenuOpen(false);
+            }}
+          >
+            Importar .docx…
           </button>
           {depth > 0 && (
             <>
