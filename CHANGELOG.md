@@ -6,6 +6,16 @@ produto — não despejo de commits.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/);
 versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.4.0]
+
+### Adicionado
+
+- **Importar um `.docx` e convertê-lo para Markdown.** Botão "Importar
+  .docx…" na tela inicial: escolha um documento Word já existente e o
+  Markforge gera o `.md` correspondente (mesma pasta, mesmo nome) e abre
+  para edição. Vale para o formato `.docx` moderno — o formato binário antigo
+  do Word 97-2003 (`.doc`) não é suportado.
+
 ## [0.3.0]
 
 ### Adicionado
@@ -112,6 +122,7 @@ Recomendamos atualizar a partir das versões 0.1.x.
   DOCX e PDF com capa, cabeçalho e rodapé, navegação pela árvore de arquivos do
   projeto, templates de exportação, landing page e CI/CD.
 
+[0.4.0]: https://github.com/MaierNeto/markforge/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/MaierNeto/markforge/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/MaierNeto/markforge/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/MaierNeto/markforge/compare/v0.1.1...v0.2.0
