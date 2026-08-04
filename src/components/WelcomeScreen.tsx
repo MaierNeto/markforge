@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useProjectStore } from "@/store/projectStore";
+import { api } from "@/lib/tauri";
 
 interface WelcomeScreenProps {
   onOpenSettings: () => void;
@@ -8,6 +10,8 @@ interface WelcomeScreenProps {
 export function WelcomeScreen({ onOpenSettings }: WelcomeScreenProps) {
   const openFolder = useProjectStore((s) => s.openFolder);
   const openSingleFile = useProjectStore((s) => s.openSingleFile);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   async function handleOpenFolder() {
     const selected = await open({ directory: true, multiple: false });
@@ -23,6 +27,24 @@ export function WelcomeScreen({ onOpenSettings }: WelcomeScreenProps) {
     });
     if (typeof selected === "string") {
       await openSingleFile(selected);
+    }
+  }
+
+  async function handleImportDocx() {
+    setImportError(null);
+    const selected = await open({
+      multiple: false,
+      filters: [{ name: "Word", extensions: ["docx"] }],
+    });
+    if (typeof selected !== "string") return;
+    setImporting(true);
+    try {
+      const mdPath = await api.importDocx(selected);
+      await openSingleFile(mdPath);
+    } catch (e) {
+      setImportError(String(e));
+    } finally {
+      setImporting(false);
     }
   }
 
@@ -42,7 +64,11 @@ export function WelcomeScreen({ onOpenSettings }: WelcomeScreenProps) {
           <button className="mf-btn-secondary" onClick={handleOpenFile}>
             Abrir arquivo .md
           </button>
+          <button className="mf-btn-secondary" disabled={importing} onClick={handleImportDocx}>
+            {importing ? "Importando…" : "Importar .docx…"}
+          </button>
         </div>
+        {importError && <div className="mf-error">{importError}</div>}
         <p className="mf-welcome-hint">
           Ideal para pastas de controle de projetos com agentes de IA — abra a raiz
           do repositório e edite os arquivos <code>.md</code> com uma interface
