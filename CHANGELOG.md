@@ -6,6 +6,27 @@ produto — não despejo de commits.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/);
 versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.5.0]
+
+### Adicionado
+
+- **Trocar de pasta ou arquivo sem fechar o Markforge.** Menu "Abrir…" na
+  barra superior — qualquer edição pendente é salva automaticamente antes de
+  trocar, do mesmo jeito que já acontecia ao trocar de arquivo dentro da
+  árvore.
+- **"Salvar como…"**, para mover o documento aberto para outra pasta.
+- **Lista de recentes na tela inicial**, com as últimas pastas e arquivos
+  abertos, um clique para retomar.
+- **Importar um `.docx` direto na pasta do projeto aberto** — antes o `.md`
+  só era criado do lado do `.docx` de origem. Disponível pelo menu de cada
+  pasta na árvore de arquivos e pelo menu "Abrir…".
+
+### Corrigido
+
+- **"Salvar como" recusava pastas que o Markforge nunca tinha aberto**, com
+  "Acesso negado" — afetava tanto o comando novo quanto a resolução de
+  conflito de arquivo externo (introduzida na 0.3.0).
+
 ## [0.4.0]
 
 ### Adicionado
@@ -122,6 +143,7 @@ Recomendamos atualizar a partir das versões 0.1.x.
   DOCX e PDF com capa, cabeçalho e rodapé, navegação pela árvore de arquivos do
   projeto, templates de exportação, landing page e CI/CD.
 
+[0.5.0]: https://github.com/MaierNeto/markforge/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/MaierNeto/markforge/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/MaierNeto/markforge/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/MaierNeto/markforge/compare/v0.2.0...v0.2.1
