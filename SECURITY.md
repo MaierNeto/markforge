@@ -2,20 +2,24 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+O Markforge é mantido por uma pessoa só, com uma única linha de
+desenvolvimento. Correções de segurança saem na **última versão publicada**
+— não há suporte retroativo a versões anteriores.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| 0.5.x   | :white_check_mark: |
+| < 0.5   | :x:                |
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+Encontrou uma vulnerabilidade? Relate pela aba **Security** deste
+repositório → **Report a vulnerability** (GitHub Private Vulnerability
+Reporting). O relato fica privado entre você e o mantenedor até a correção
+sair — não abra uma issue pública para isso.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Sem prazo de SLA formal (projeto de mantenedor único), mas o compromisso é:
+- confirmar o recebimento do relato;
+- avisar quando a causa for entendida e se foi aceita como vulnerabilidade real;
+- avisar quando a correção for publicada, antes de qualquer divulgação pública
+  dos detalhes.
