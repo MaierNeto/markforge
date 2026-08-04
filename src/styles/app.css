@@ -76,6 +76,18 @@
   gap: 10px;
 }
 
+.mf-open-menu {
+  position: relative;
+}
+
+.mf-open-menu-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  margin-bottom: 0;
+}
+
 .mf-save-status {
   font-size: 12px;
   color: var(--mf-gray-400);
@@ -184,6 +196,40 @@
 .mf-welcome-actions .mf-btn-secondary:hover {
   background: rgba(0, 0, 0, 0.04);
 }
+
+.mf-welcome-recents {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 18px;
+  text-align: left;
+}
+
+.mf-welcome-recents-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--mf-gray-400);
+  margin-bottom: 4px;
+}
+
+.mf-welcome-recent-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: var(--mf-navy-800);
+  font-size: 13px;
+  padding: 6px 4px;
+  border-radius: 4px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mf-welcome-recent-item:hover { background: rgba(0, 0, 0, 0.04); }
 
 .mf-welcome-settings {
   margin-top: 16px;

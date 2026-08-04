@@ -5,10 +5,13 @@ use tauri_plugin_shell::ShellExt;
 use super::export::check_output;
 use super::fs_commands::AllowedRoots;
 
-/// Deriva o caminho do .md de destino a partir do .docx de origem: mesma
-/// pasta, mesmo nome, extensão trocada. Não sobrescreve — ver import_docx.
-fn derive_markdown_path(docx_path: &Path) -> PathBuf {
-    docx_path.with_extension("md")
+/// Deriva o caminho do .md de destino: nome do .docx de origem (sem
+/// extensão), dentro da pasta de destino informada — que pode ser diferente
+/// da pasta onde o .docx está (ex.: importar para dentro do projeto aberto,
+/// não para a pasta de Downloads). Não sobrescreve — ver import_docx.
+fn derive_markdown_path(docx_path: &Path, dest_dir: &Path) -> PathBuf {
+    let stem = docx_path.file_stem().unwrap_or_default();
+    dest_dir.join(stem).with_extension("md")
 }
 
 fn register_root(roots: &AllowedRoots, path: &Path) {
@@ -27,13 +30,18 @@ pub async fn import_docx(
     app: tauri::AppHandle,
     roots: tauri::State<'_, AllowedRoots>,
     source_path: String,
+    dest_dir: String,
 ) -> Result<String, String> {
     let source = PathBuf::from(&source_path);
     if !source.exists() {
         return Err(format!("Arquivo não encontrado: {source_path}"));
     }
+    let dest_dir_path = PathBuf::from(&dest_dir);
+    if !dest_dir_path.is_dir() {
+        return Err(format!("Pasta de destino não encontrada: {dest_dir}"));
+    }
 
-    let dest = derive_markdown_path(&source);
+    let dest = derive_markdown_path(&source, &dest_dir_path);
     if dest.exists() {
         return Err(format!(
             "Já existe um arquivo \"{}\" — renomeie ou remova antes de importar.",
@@ -41,10 +49,7 @@ pub async fn import_docx(
         ));
     }
 
-    let dest_dir = dest
-        .parent()
-        .ok_or_else(|| "Caminho de destino inválido".to_string())?;
-    register_root(&roots, dest_dir);
+    register_root(&roots, &dest_dir_path);
 
     let cmd = app
         .shell()
@@ -76,18 +81,29 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn troca_extensao_docx_por_md() {
+    fn troca_extensao_docx_por_md_na_pasta_de_destino() {
         assert_eq!(
-            derive_markdown_path(&PathBuf::from("/projeto/Relatorio.docx")),
+            derive_markdown_path(&PathBuf::from("/downloads/Relatorio.docx"), &PathBuf::from("/projeto")),
             PathBuf::from("/projeto/Relatorio.md")
         );
     }
 
     #[test]
-    fn preserva_a_pasta_de_origem() {
+    fn usa_a_pasta_de_destino_mesmo_quando_diferente_da_origem() {
         assert_eq!(
-            derive_markdown_path(&PathBuf::from("C:\\Users\\walter\\Documentos\\Ata.docx")),
-            PathBuf::from("C:\\Users\\walter\\Documentos\\Ata.md")
+            derive_markdown_path(
+                &PathBuf::from("C:\\Users\\walter\\Downloads\\Ata.docx"),
+                &PathBuf::from("C:\\Users\\walter\\Projetos\\doc-projeto")
+            ),
+            PathBuf::from("C:\\Users\\walter\\Projetos\\doc-projeto\\Ata.md")
+        );
+    }
+
+    #[test]
+    fn preserva_o_nome_quando_pasta_de_destino_e_a_mesma_da_origem() {
+        assert_eq!(
+            derive_markdown_path(&PathBuf::from("/projeto/Relatorio.docx"), &PathBuf::from("/projeto")),
+            PathBuf::from("/projeto/Relatorio.md")
         );
     }
 }
