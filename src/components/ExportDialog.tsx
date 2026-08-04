@@ -17,6 +17,7 @@ interface ExportDialogProps {
 export function ExportDialog({ onClose }: ExportDialogProps) {
   const openDoc = useProjectStore((s) => s.openDoc);
   const rootPath = useProjectStore((s) => s.rootPath);
+  const openExportFolder = useProjectStore((s) => s.openExportFolder);
 
   const [deps, setDeps] = useState<DependencyStatus | null>(null);
   const [templates, setTemplates] = useState<TemplateInfo[]>([]);
@@ -170,6 +171,15 @@ export function ExportDialog({ onClose }: ExportDialogProps) {
               {result.warnings.map((w, i) => (
                 <p key={i} className="mf-warning-line">⚠ {w}</p>
               ))}
+              <button
+                className="mf-btn-secondary mf-open-folder-btn"
+                onClick={() => {
+                  const exported = result.docx_path ?? result.pdf_path;
+                  if (exported) openExportFolder(exported);
+                }}
+              >
+                📂 Abrir pasta
+              </button>
             </div>
           )}
         </div>

@@ -545,3 +545,68 @@
   border-radius: 20px;
   padding: 2px 8px;
 }
+
+/* RFC-002 — banner de mudança externa no disco */
+.mf-external-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  margin: 10px 14px 0;
+  border: 1px solid var(--mf-amber-400);
+  background: rgba(245, 158, 11, 0.12);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.mf-external-banner--conflict {
+  border-color: var(--mf-red-500);
+  background: rgba(214, 69, 69, 0.12);
+}
+.mf-external-msg {
+  flex: 1;
+  min-width: 220px;
+  line-height: 1.4;
+}
+.mf-external-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* RFC-003 — cabeçalho da árvore com botão de recarregar */
+.mf-tree-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px 2px;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mf-gray-400);
+}
+.mf-tree-reload-btn {
+  background: transparent;
+  border: none;
+  color: var(--mf-gray-400);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  line-height: 1;
+}
+.mf-tree-reload-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+}
+
+/* RFC-004 — botão "Abrir pasta" no resultado da exportação */
+.mf-open-folder-btn {
+  margin-top: 10px;
+}
+
+/* RFC-005 — diálogo "Salvar alterações antes de fechar?" (modal compacto) */
+.mf-modal--sm {
+  max-width: 420px;
+}

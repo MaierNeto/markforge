@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import { FileNode } from "@/lib/tauri";
 import { basename } from "@/lib/paths";
 import { useProjectStore } from "@/store/projectStore";
+import { usePromptDialog } from "@/lib/usePromptDialog";
 
 interface NodeProps {
   node: FileNode;
@@ -14,6 +16,7 @@ function TreeNode({ node, depth, activePath, onOpenFile }: NodeProps) {
   const [expanded, setExpanded] = useState(true);
   const { createFile, createFolder, renameEntry, deleteEntry } = useProjectStore();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { promptText, promptDialog } = usePromptDialog();
 
   if (!node.is_dir) {
     const isActive = node.path === activePath;
@@ -55,7 +58,9 @@ function TreeNode({ node, depth, activePath, onOpenFile }: NodeProps) {
         <div className="mf-tree-menu" style={{ marginLeft: depth * 14 + 24 }}>
           <button
             onClick={async () => {
-              const name = prompt("Nome do novo arquivo (.md):", "novo-documento.md");
+              const name = await promptText("Novo arquivo", "novo-documento.md", {
+                label: "Nome do novo arquivo (.md):",
+              });
               if (name) await createFile(node.path, name.endsWith(".md") ? name : `${name}.md`);
               setMenuOpen(false);
             }}
@@ -64,7 +69,9 @@ function TreeNode({ node, depth, activePath, onOpenFile }: NodeProps) {
           </button>
           <button
             onClick={async () => {
-              const name = prompt("Nome da nova pasta:", "nova-pasta");
+              const name = await promptText("Nova pasta", "nova-pasta", {
+                label: "Nome da nova pasta:",
+              });
               if (name) await createFolder(node.path, name);
               setMenuOpen(false);
             }}
@@ -75,7 +82,9 @@ function TreeNode({ node, depth, activePath, onOpenFile }: NodeProps) {
             <>
               <button
                 onClick={async () => {
-                  const name = prompt("Renomear para:", node.name);
+                  const name = await promptText("Renomear", node.name, {
+                    label: "Renomear para:",
+                  });
                   if (name) await renameEntry(node.path, name);
                   setMenuOpen(false);
                 }}
@@ -85,7 +94,7 @@ function TreeNode({ node, depth, activePath, onOpenFile }: NodeProps) {
               <button
                 className="danger"
                 onClick={async () => {
-                  if (confirm(`Excluir "${node.name}" e todo o conteúdo?`)) {
+                  if (await confirm(`Excluir "${node.name}" e todo o conteúdo?`, { kind: "warning" })) {
                     await deleteEntry(node.path);
                   }
                   setMenuOpen(false);
@@ -97,6 +106,7 @@ function TreeNode({ node, depth, activePath, onOpenFile }: NodeProps) {
           )}
         </div>
       )}
+      {promptDialog}
       {expanded &&
         children
           .slice()
@@ -122,6 +132,7 @@ export function FileTree() {
   const openDoc = useProjectStore((s) => s.openDoc);
   const openFile = useProjectStore((s) => s.openFile);
   const includeFolder = useProjectStore((s) => s.includeFolder);
+  const refreshTree = useProjectStore((s) => s.refreshTree);
   const loading = useProjectStore((s) => s.loadingTree);
 
   if (loading) {
@@ -151,6 +162,16 @@ export function FileTree() {
 
   return (
     <div className="mf-tree">
+      <div className="mf-tree-header">
+        <span className="mf-tree-header-title">Arquivos</span>
+        <button
+          className="mf-tree-reload-btn"
+          onClick={() => refreshTree()}
+          title="Recarregar pasta (detecta arquivos adicionados/removidos)"
+        >
+          ⟳
+        </button>
+      </div>
       {children
         .slice()
         .sort((a, b) => {

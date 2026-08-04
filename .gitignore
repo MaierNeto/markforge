@@ -33,3 +33,7 @@ _to_delete/
 # Nunca vai para o remoto, seja o repo público ou privado.
 ROADMAP-ESTRATEGICO.md
 *.reservado.md
+
+# Retaguarda (cozinha): backlog real, dívida técnica, autocrítica, continuidade.
+# O repo é PÚBLICO — só o produto refinado sai daqui. O salão é o README/CHANGELOG/ROADMAP.
+docs/_interno/

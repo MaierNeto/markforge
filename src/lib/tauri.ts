@@ -102,6 +102,12 @@ export const api = {
   allowFile(path: string): Promise<void> {
     return invoke("allow_file", { path });
   },
+  backupFile(path: string, content: string): Promise<void> {
+    return invoke("write_text_file", { path: path + "~", content });
+  },
+  quitApp(): Promise<void> {
+    return invoke("quit_app");
+  },
   assocSupported(): Promise<boolean> {
     return invoke("assoc_supported");
   },

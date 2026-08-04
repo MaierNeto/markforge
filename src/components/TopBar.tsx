@@ -17,9 +17,14 @@ export function TopBar({ onExport, onManageTemplates, onOpenSettings }: TopBarPr
   const openDoc = useProjectStore((s) => s.openDoc);
   const rootPath = useProjectStore((s) => s.rootPath);
   const saveStatus = useProjectStore((s) => s.saveStatus);
+  const toggleEditMode = useProjectStore((s) => s.toggleEditMode);
+  const revertToSnapshot = useProjectStore((s) => s.revertToSnapshot);
 
   const relativePath =
     openDoc && rootPath ? openDoc.path.replace(rootPath, "").replace(/^[\\/]/, "") : "";
+
+  const isReading = openDoc?.mode === "reading";
+  const isDirty = openDoc?.dirty;
 
   return (
     <div className="mf-topbar">
@@ -28,7 +33,24 @@ export function TopBar({ onExport, onManageTemplates, onOpenSettings }: TopBarPr
         {openDoc && <span className="mf-breadcrumb">{relativePath}</span>}
       </div>
       <div className="mf-topbar-actions">
-        {openDoc && <span className="mf-save-status">{STATUS_LABEL[saveStatus]}</span>}
+        {openDoc && <span className="mf-save-status">{isDirty ? "● " : ""}{STATUS_LABEL[saveStatus]}</span>}
+        {openDoc && isReading && (
+          <button className="mf-btn-secondary" onClick={toggleEditMode} title="Habilitar edição">
+            Editar
+          </button>
+        )}
+        {openDoc && !isReading && (
+          <>
+            <button className="mf-btn-secondary" onClick={toggleEditMode} title="Voltar para leitura">
+              Leitura
+            </button>
+            {isDirty && (
+              <button className="mf-btn-danger" onClick={revertToSnapshot} title="Reverter ao original">
+                Reverter
+              </button>
+            )}
+          </>
+        )}
         <button className="mf-btn-secondary" onClick={onOpenSettings} title="Configurações">
           Configurações
         </button>
