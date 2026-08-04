@@ -1,6 +1,7 @@
 pub mod deps;
 pub mod export;
 pub mod fs_commands;
+pub mod import;
 pub mod startup;
 pub mod templates;
 pub mod win_assoc;

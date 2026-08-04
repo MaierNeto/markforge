@@ -38,6 +38,23 @@ if [ ! -s "$OUT_DIR/smoke.docx" ]; then
 fi
 echo "OK: $(du -h "$OUT_DIR/smoke.docx" | cut -f1) — $OUT_DIR/smoke.docx"
 
+echo "==> Testando importação DOCX (Pandoc, sentido inverso da exportação)"
+"$PANDOC_BIN" "$OUT_DIR/smoke.docx" \
+  --from docx \
+  --to markdown+yaml_metadata_block \
+  --wrap none \
+  -o "$OUT_DIR/smoke-roundtrip.md"
+
+if [ ! -s "$OUT_DIR/smoke-roundtrip.md" ]; then
+  echo "FALHA: smoke-roundtrip.md não foi gerado ou está vazio"
+  exit 1
+fi
+if ! grep -q "Seção de teste" "$OUT_DIR/smoke-roundtrip.md"; then
+  echo "FALHA: conteúdo do round-trip não contém o título original"
+  exit 1
+fi
+echo "OK: $(du -h "$OUT_DIR/smoke-roundtrip.md" | cut -f1) — $OUT_DIR/smoke-roundtrip.md"
+
 echo "==> Testando exportação PDF (Pandoc + Typst + pdf-template.typ)"
 "$PANDOC_BIN" "$FIXTURE" \
   --from markdown+yaml_metadata_block-citations \

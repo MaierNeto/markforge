@@ -92,7 +92,7 @@ fn write_temp_markdown(dir: &Path, content: &str) -> Result<PathBuf, String> {
     Ok(path)
 }
 
-fn check_output(context: &str, output: &Output) -> Result<(), String> {
+pub(super) fn check_output(context: &str, output: &Output) -> Result<(), String> {
     if !output.status.success() {
         return Err(format!(
             "{context}:\n{}",

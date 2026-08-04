@@ -6,7 +6,7 @@ use std::path::PathBuf;
 
 use commands::fs_commands::AllowedRoots;
 use commands::startup::{first_markdown_arg, StartupFile};
-use commands::{deps, export, fs_commands, startup, templates, win_assoc};
+use commands::{deps, export, fs_commands, import, startup, templates, win_assoc};
 
 /// RFC-005: encerra o aplicativo de verdade. Chamado pelo frontend **depois** de
 /// decidir o destino das edições não salvas (Sim/Não/Cancelar). O `app.exit(0)`
@@ -79,6 +79,7 @@ pub fn run() {
             templates::import_template,
             templates::delete_template,
             export::export_document,
+            import::import_docx,
             startup::take_startup_file,
             win_assoc::assoc_supported,
             win_assoc::get_association_status,
