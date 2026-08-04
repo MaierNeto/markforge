@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { open } from "@tauri-apps/plugin-dialog";
+import { open, confirm } from "@tauri-apps/plugin-dialog";
 import { api, TemplateInfo } from "@/lib/tauri";
+import { usePromptDialog } from "@/lib/usePromptDialog";
 
 interface TemplateManagerProps {
   onClose: () => void;
@@ -10,6 +11,7 @@ export function TemplateManager({ onClose }: TemplateManagerProps) {
   const [templates, setTemplates] = useState<TemplateInfo[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { promptText, promptDialog } = usePromptDialog();
 
   function reload() {
     api.listTemplates().then(setTemplates).catch((e) => setError(String(e)));
@@ -24,7 +26,9 @@ export function TemplateManager({ onClose }: TemplateManagerProps) {
       filters: [{ name: "Modelo Word", extensions: ["docx"] }],
     });
     if (typeof selected !== "string") return;
-    const name = prompt("Nome para este template:", "Meu template");
+    const name = await promptText("Novo template", "Meu template", {
+      label: "Nome para este template:",
+    });
     if (!name) return;
     setBusy(true);
     try {
@@ -38,7 +42,7 @@ export function TemplateManager({ onClose }: TemplateManagerProps) {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Remover este template?")) return;
+    if (!(await confirm("Remover este template?", { kind: "warning" }))) return;
     try {
       await api.deleteTemplate(id);
       reload();
@@ -84,6 +88,7 @@ export function TemplateManager({ onClose }: TemplateManagerProps) {
           </button>
         </div>
       </div>
+      {promptDialog}
     </div>
   );
 }

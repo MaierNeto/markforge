@@ -8,6 +8,15 @@ use commands::fs_commands::AllowedRoots;
 use commands::startup::{first_markdown_arg, StartupFile};
 use commands::{deps, export, fs_commands, startup, templates, win_assoc};
 
+/// RFC-005: encerra o aplicativo de verdade. Chamado pelo frontend **depois** de
+/// decidir o destino das edições não salvas (Sim/Não/Cancelar). O `app.exit(0)`
+/// dispara o encerramento sem re-entrar no handler de `CloseRequested` — evita
+/// loop de "fechou de novo?".
+#[tauri::command]
+fn quit_app(app: tauri::AppHandle) {
+    app.exit(0);
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Arquivo passado na linha de comando (ex.: duplo-clique num .md associado
@@ -44,6 +53,17 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
+        // RFC-005: fecha a janela só depois que o frontend decidir o destino das
+        // edições não salvas. O close é interceptado, prevenido e o webview é
+        // avisado; ele responde com quit_app (salvando/descartando) ou com nada
+        // (Cancelar → a janela permanece aberta).
+        .on_window_event(|window, event| {
+            use tauri::Emitter;
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let _ = window.emit("close-requested", ());
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             fs_commands::list_markdown_tree,
             fs_commands::read_text_file,
@@ -66,6 +86,7 @@ pub fn run() {
             win_assoc::get_context_menu_status,
             win_assoc::set_context_menu,
             win_assoc::open_default_apps_settings,
+            quit_app,
         ])
         .run(tauri::generate_context!())
         .expect("erro ao iniciar o Markforge");
