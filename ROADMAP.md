@@ -24,9 +24,10 @@ O que já foi entregue está no [CHANGELOG.md](CHANGELOG.md).
 
 ## Mais tarde
 
-* **Importar DOCX e PDF, convertendo para Markdown.** O caminho inverso da
-  exportação: trazer um documento já existente para dentro do Markforge como
-  `.md`, para poder editar visualmente a partir dele.
+* **Importar PDF, convertendo para Markdown.** PDF é formato de layout de
+  página, não de estrutura de texto — diferente do DOCX, não tem como
+  recuperar títulos/parágrafos/tabelas de forma confiável sem uma ferramenta
+  bem mais pesada. Ainda em aberto qual abordagem vale a pena.
 
 ## Não previsto
 
