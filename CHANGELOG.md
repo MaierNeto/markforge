@@ -6,6 +6,32 @@ produto — não despejo de commits.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/);
 versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.3.0]
+
+### Adicionado
+
+- **Abertura em modo leitura.** Os documentos passam a abrir protegidos contra
+  alteração acidental. Um botão libera a edição quando você quiser, e é
+  possível reverter para o conteúdo com que o arquivo foi aberto na sessão.
+- **Aviso quando o arquivo é alterado por outro programa.** Ao voltar para o
+  Markforge, se o arquivo aberto mudou por fora, você é avisado — pode
+  recarregar a versão do disco, resolver mantendo sua edição (com backup
+  automático do conteúdo anterior) ou salvar como um novo arquivo.
+- **A lista de arquivos se atualiza sozinha** quando um arquivo é criado ou
+  removido por fora do Markforge, e também pode ser atualizada manualmente a
+  qualquer momento pelo botão ⟳.
+- **Abrir a pasta do documento direto do diálogo de exportação**, sem precisar
+  procurar o arquivo no Explorer.
+- **Confirmação ao fechar com alterações pendentes.** Fechar a janela com
+  edições não salvas passa a perguntar se você quer salvar, descartar ou
+  cancelar — nada se perde por engano.
+
+### Corrigido
+
+- **Diálogos de nova pasta, novo arquivo, renomear, excluir e remover
+  template mostravam "tauri.localhost diz" no lugar do nome do Markforge.**
+  Passaram a usar diálogos nativos do aplicativo.
+
 ## [0.2.1]
 
 ### Corrigido
@@ -86,6 +112,7 @@ Recomendamos atualizar a partir das versões 0.1.x.
   DOCX e PDF com capa, cabeçalho e rodapé, navegação pela árvore de arquivos do
   projeto, templates de exportação, landing page e CI/CD.
 
+[0.3.0]: https://github.com/MaierNeto/markforge/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/MaierNeto/markforge/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/MaierNeto/markforge/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/MaierNeto/markforge/compare/v0.1.0...v0.1.1
