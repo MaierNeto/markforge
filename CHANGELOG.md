@@ -6,6 +6,18 @@ produto — não despejo de commits.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/);
 versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.6.0]
+
+### Adicionado
+
+- **Botão "+ Novo" no cabeçalho da árvore de arquivos**, para criar o
+  primeiro documento de uma pasta vazia (ou qualquer arquivo direto na raiz
+  do projeto) — antes só dava para criar arquivo dentro de uma subpasta já
+  existente. O arquivo criado abre direto para edição.
+- **Importar também aceita `.txt`**, copiando o conteúdo literal para o
+  `.md` — sem interpretar `*`, `#` e outros caracteres como sintaxe
+  Markdown.
+
 ## [0.5.0]
 
 ### Adicionado
@@ -143,6 +155,7 @@ Recomendamos atualizar a partir das versões 0.1.x.
   DOCX e PDF com capa, cabeçalho e rodapé, navegação pela árvore de arquivos do
   projeto, templates de exportação, landing page e CI/CD.
 
+[0.6.0]: https://github.com/MaierNeto/markforge/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/MaierNeto/markforge/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/MaierNeto/markforge/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/MaierNeto/markforge/compare/v0.2.1...v0.3.0
