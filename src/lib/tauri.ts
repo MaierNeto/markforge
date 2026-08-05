@@ -93,8 +93,8 @@ export const api = {
   exportDocument(options: ExportOptions): Promise<ExportResult> {
     return invoke("export_document", { options });
   },
-  importDocx(sourcePath: string, destDir: string): Promise<string> {
-    return invoke("import_docx", { sourcePath, destDir });
+  importDocument(sourcePath: string, destDir: string): Promise<string> {
+    return invoke("import_document", { sourcePath, destDir });
   },
   openPath(path: string): Promise<void> {
     return invoke("open_in_file_manager", { path });

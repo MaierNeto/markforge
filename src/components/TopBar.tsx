@@ -24,7 +24,7 @@ export function TopBar({ onExport, onManageTemplates, onOpenSettings }: TopBarPr
   const openFolder = useProjectStore((s) => s.openFolder);
   const openSingleFile = useProjectStore((s) => s.openSingleFile);
   const saveAs = useProjectStore((s) => s.saveAs);
-  const importDocxFile = useProjectStore((s) => s.importDocxFile);
+  const importDocumentFile = useProjectStore((s) => s.importDocumentFile);
   const [openMenuVisible, setOpenMenuVisible] = useState(false);
 
   const relativePath =
@@ -48,14 +48,14 @@ export function TopBar({ onExport, onManageTemplates, onOpenSettings }: TopBarPr
     if (typeof selected === "string") await openSingleFile(selected);
   }
 
-  async function handleImportDocx() {
+  async function handleImportDocument() {
     setOpenMenuVisible(false);
     if (!rootPath) return;
     const selected = await open({
       multiple: false,
-      filters: [{ name: "Word", extensions: ["docx"] }],
+      filters: [{ name: "Documento", extensions: ["docx", "txt"] }],
     });
-    if (typeof selected === "string") await importDocxFile(selected, rootPath);
+    if (typeof selected === "string") await importDocumentFile(selected, rootPath);
   }
 
   async function handleSaveAs() {
@@ -109,8 +109,8 @@ export function TopBar({ onExport, onManageTemplates, onOpenSettings }: TopBarPr
             <div className="mf-tree-menu mf-open-menu-list">
               <button onClick={handleOpenAnotherFolder}>Abrir pasta…</button>
               <button onClick={handleOpenAnotherFile}>Abrir arquivo .md…</button>
-              <button onClick={handleImportDocx} title="Importa para a raiz da pasta do projeto atual">
-                Importar .docx…
+              <button onClick={handleImportDocument} title="Importa para a raiz da pasta do projeto atual">
+                Importar documento…
               </button>
             </div>
           )}

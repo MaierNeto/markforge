@@ -79,7 +79,7 @@ pub fn run() {
             templates::import_template,
             templates::delete_template,
             export::export_document,
-            import::import_docx,
+            import::import_document,
             startup::take_startup_file,
             win_assoc::assoc_supported,
             win_assoc::get_association_status,
