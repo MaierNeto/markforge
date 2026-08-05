@@ -10,7 +10,7 @@ interface WelcomeScreenProps {
 export function WelcomeScreen({ onOpenSettings }: WelcomeScreenProps) {
   const openFolder = useProjectStore((s) => s.openFolder);
   const openSingleFile = useProjectStore((s) => s.openSingleFile);
-  const importDocxFile = useProjectStore((s) => s.importDocxFile);
+  const importDocumentFile = useProjectStore((s) => s.importDocumentFile);
   const recents = useProjectStore((s) => s.recents);
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
@@ -40,17 +40,17 @@ export function WelcomeScreen({ onOpenSettings }: WelcomeScreenProps) {
     }
   }
 
-  async function handleImportDocx() {
+  async function handleImportDocument() {
     setImportError(null);
     const selected = await open({
       multiple: false,
-      filters: [{ name: "Word", extensions: ["docx"] }],
+      filters: [{ name: "Documento", extensions: ["docx", "txt"] }],
     });
     if (typeof selected !== "string") return;
     setImporting(true);
     try {
-      // Sem projeto aberto ainda: importa para a mesma pasta do .docx.
-      await importDocxFile(selected, dirname(selected));
+      // Sem projeto aberto ainda: importa para a mesma pasta do documento.
+      await importDocumentFile(selected, dirname(selected));
     } catch (e) {
       setImportError(String(e));
     } finally {
@@ -74,8 +74,8 @@ export function WelcomeScreen({ onOpenSettings }: WelcomeScreenProps) {
           <button className="mf-btn-secondary" onClick={handleOpenFile}>
             Abrir arquivo .md
           </button>
-          <button className="mf-btn-secondary" disabled={importing} onClick={handleImportDocx}>
-            {importing ? "Importando…" : "Importar .docx…"}
+          <button className="mf-btn-secondary" disabled={importing} onClick={handleImportDocument}>
+            {importing ? "Importando…" : "Importar documento…"}
           </button>
         </div>
         {importError && <div className="mf-error">{importError}</div>}

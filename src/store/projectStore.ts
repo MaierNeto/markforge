@@ -37,7 +37,7 @@ interface ProjectState {
   updateBody: (body: string) => void;
   updateMetadata: (metadata: DocMetadata) => void;
   saveCurrentFile: () => Promise<void>;
-  createFile: (dir: string, name: string) => Promise<void>;
+  createFile: (dir: string, name: string) => Promise<string>;
   createFolder: (dir: string, name: string) => Promise<void>;
   renameEntry: (path: string, newName: string) => Promise<void>;
   deleteEntry: (path: string) => Promise<void>;
@@ -50,7 +50,7 @@ interface ProjectState {
   discardLocalAndReload: () => void;
   saveOverExternal: () => Promise<void>;
   saveAs: (newPath: string) => Promise<void>;
-  importDocxFile: (sourcePath: string, destDir: string) => Promise<string>;
+  importDocumentFile: (sourcePath: string, destDir: string) => Promise<string>;
   updateHashDisco: () => void;
   openExportFolder: (exportedFilePath: string) => Promise<void>;
   hasUnsavedChanges: () => boolean;
@@ -264,8 +264,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
 
   async createFile(dir: string, name: string) {
-    await api.createMarkdownFile(dir, name);
+    const path = await api.createMarkdownFile(dir, name);
     await get().refreshTree();
+    await get().openFile(path);
+    return path;
   },
 
   async createFolder(dir: string, name: string) {
@@ -481,11 +483,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     });
   },
 
-  // Importa um .docx convertendo para .md dentro de destDir (pode ser a pasta
-  // do projeto aberto, diferente da pasta onde o .docx está) e abre o
-  // resultado. Atualiza a árvore se um projeto já estiver aberto.
-  async importDocxFile(sourcePath: string, destDir: string) {
-    const mdPath = await api.importDocx(sourcePath, destDir);
+  // Importa um documento (.docx ou .txt) convertendo para .md dentro de
+  // destDir (pode ser a pasta do projeto aberto, diferente da pasta onde o
+  // arquivo original está) e abre o resultado. Atualiza a árvore se um
+  // projeto já estiver aberto.
+  async importDocumentFile(sourcePath: string, destDir: string) {
+    const mdPath = await api.importDocument(sourcePath, destDir);
     if (get().tree) {
       await get().refreshTree();
     }

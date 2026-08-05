@@ -14,7 +14,7 @@ interface NodeProps {
 
 function TreeNode({ node, depth, activePath, onOpenFile }: NodeProps) {
   const [expanded, setExpanded] = useState(true);
-  const { createFile, createFolder, renameEntry, deleteEntry, importDocxFile } = useProjectStore();
+  const { createFile, createFolder, renameEntry, deleteEntry, importDocumentFile } = useProjectStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const { promptText, promptDialog } = usePromptDialog();
 
@@ -82,13 +82,13 @@ function TreeNode({ node, depth, activePath, onOpenFile }: NodeProps) {
             onClick={async () => {
               const selected = await open({
                 multiple: false,
-                filters: [{ name: "Word", extensions: ["docx"] }],
+                filters: [{ name: "Documento", extensions: ["docx", "txt"] }],
               });
-              if (typeof selected === "string") await importDocxFile(selected, node.path);
+              if (typeof selected === "string") await importDocumentFile(selected, node.path);
               setMenuOpen(false);
             }}
           >
-            Importar .docx…
+            Importar documento…
           </button>
           {depth > 0 && (
             <>
@@ -145,7 +145,18 @@ export function FileTree() {
   const openFile = useProjectStore((s) => s.openFile);
   const includeFolder = useProjectStore((s) => s.includeFolder);
   const refreshTree = useProjectStore((s) => s.refreshTree);
+  const createFile = useProjectStore((s) => s.createFile);
+  const rootPath = useProjectStore((s) => s.rootPath);
   const loading = useProjectStore((s) => s.loadingTree);
+  const { promptText, promptDialog } = usePromptDialog();
+
+  async function handleNewFileAtRoot() {
+    if (!rootPath) return;
+    const name = await promptText("Novo arquivo", "novo-documento.md", {
+      label: "Nome do novo arquivo (.md):",
+    });
+    if (name) await createFile(rootPath, name.endsWith(".md") ? name : `${name}.md`);
+  }
 
   if (loading) {
     return <div className="mf-tree-empty">Carregando arquivos…</div>;
@@ -168,37 +179,50 @@ export function FileTree() {
     return <div className="mf-tree-empty">Nenhuma pasta aberta.</div>;
   }
   const children = tree.children ?? [];
-  if (children.length === 0) {
-    return <div className="mf-tree-empty">Nenhum arquivo .md encontrado nesta pasta.</div>;
-  }
 
   return (
     <div className="mf-tree">
       <div className="mf-tree-header">
         <span className="mf-tree-header-title">Arquivos</span>
-        <button
-          className="mf-tree-reload-btn"
-          onClick={() => refreshTree()}
-          title="Recarregar pasta (detecta arquivos adicionados/removidos)"
-        >
-          ⟳
-        </button>
+        <div className="mf-tree-header-actions">
+          <button
+            className="mf-tree-reload-btn mf-tree-new-btn"
+            onClick={handleNewFileAtRoot}
+            title="Novo arquivo na raiz do projeto"
+          >
+            + Novo
+          </button>
+          <button
+            className="mf-tree-reload-btn"
+            onClick={() => refreshTree()}
+            title="Recarregar pasta (detecta arquivos adicionados/removidos)"
+          >
+            ⟳
+          </button>
+        </div>
       </div>
-      {children
-        .slice()
-        .sort((a, b) => {
-          if (a.is_dir !== b.is_dir) return a.is_dir ? -1 : 1;
-          return a.name.localeCompare(b.name, "pt-BR");
-        })
-        .map((child) => (
-          <TreeNode
-            key={child.path}
-            node={child}
-            depth={0}
-            activePath={openDoc?.path ?? null}
-            onOpenFile={openFile}
-          />
-        ))}
+      {promptDialog}
+      {children.length === 0 ? (
+        <div className="mf-tree-empty">
+          Nenhum arquivo .md ainda — clique em "+ Novo" para criar o primeiro.
+        </div>
+      ) : (
+        children
+          .slice()
+          .sort((a, b) => {
+            if (a.is_dir !== b.is_dir) return a.is_dir ? -1 : 1;
+            return a.name.localeCompare(b.name, "pt-BR");
+          })
+          .map((child) => (
+            <TreeNode
+              key={child.path}
+              node={child}
+              depth={0}
+              activePath={openDoc?.path ?? null}
+              onOpenFile={openFile}
+            />
+          ))
+      )}
     </div>
   );
 }

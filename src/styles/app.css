@@ -632,6 +632,12 @@
   letter-spacing: 0.06em;
   color: var(--mf-gray-400);
 }
+.mf-tree-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
 .mf-tree-reload-btn {
   background: transparent;
   border: none;
@@ -645,6 +651,13 @@
 .mf-tree-reload-btn:hover {
   background: rgba(255, 255, 255, 0.08);
   color: inherit;
+}
+
+.mf-tree-new-btn {
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: nowrap;
 }
 
 /* RFC-004 — botão "Abrir pasta" no resultado da exportação */
