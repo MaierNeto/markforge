@@ -184,7 +184,12 @@ mod tests {
         );
     }
 
+    /// Só faz sentido no Windows: fora dele a barra invertida é um caractere
+    /// comum de nome de arquivo, não separador de pasta, e o caminho inteiro
+    /// vira um nome só. A intenção — usar a pasta de destino, e não a de origem —
+    /// já está coberta de forma portátil pelos dois testes vizinhos.
     #[test]
+    #[cfg(windows)]
     fn usa_a_pasta_de_destino_mesmo_quando_diferente_da_origem() {
         assert_eq!(
             derive_markdown_path(
