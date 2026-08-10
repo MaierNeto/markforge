@@ -1,4 +1,5 @@
 pub mod deps;
+pub mod docx_outline;
 pub mod export;
 pub mod fs_commands;
 pub mod import;

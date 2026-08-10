@@ -47,6 +47,17 @@ pub struct ExportResult {
     warnings: Vec<String>,
 }
 
+/// Dialeto de Markdown que a exportação para DOCX lê.
+///
+/// `-citations`: "@algo" (pacote npm com escopo, menção, e-mail) é texto
+/// literal, não citação bibliográfica — ver `run_pandoc_to_pdf`.
+///
+/// Precisa ler tudo o que a importação grava (ver `IMPORT_MARKDOWN_DIALECT`):
+/// o dialeto do Pandoc é superconjunto do GFM nos pontos que usamos — tabela de
+/// canos e HTML bruto inclusive. Há teste de ida-e-volta fixando isso.
+pub(crate) const EXPORT_MARKDOWN_DIALECT: &str =
+    "markdown+yaml_metadata_block+raw_attribute-citations";
+
 /// Remove o bloco de front-matter YAML (usado quando "Incluir capa" está
 /// desmarcado, para que nenhum título/autor/data vaze no corpo do documento).
 fn strip_frontmatter(markdown: &str) -> String {
@@ -116,9 +127,7 @@ async fn run_pandoc_to_docx(
         .args([
             md_path.as_os_str().to_string_lossy().to_string(),
             "--from".into(),
-            // -citations: "@algo" (pacote npm com escopo, menção, e-mail) é
-            // texto literal, não citação bibliográfica — ver run_pandoc_to_pdf.
-            "markdown+yaml_metadata_block+raw_attribute-citations".into(),
+            EXPORT_MARKDOWN_DIALECT.into(),
             "--reference-doc".into(),
             reference_doc.as_os_str().to_string_lossy().to_string(),
             "--resource-path".into(),
