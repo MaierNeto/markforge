@@ -2,7 +2,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use tauri_plugin_shell::ShellExt;
+use uuid::Uuid;
 
+use super::docx_outline;
 use super::export::check_output;
 use super::fs_commands::AllowedRoots;
 
@@ -23,19 +25,47 @@ fn register_root(roots: &AllowedRoots, path: &Path) {
     }
 }
 
+/// Dialeto de Markdown que a importação grava.
+///
+/// **GFM porque é o que o editor fala.** O Milkdown lê CommonMark + GFM; o
+/// dialeto do Pandoc traz construções que só ele entende — span de indicador
+/// (`[]{#...}`), atributo de título (`{#id .classe}`), tabela em grade — e todas
+/// aparecem como lixo literal na tela.
+///
+/// **`raw_html` fica LIGADO de propósito.** Desligar (`gfm-raw_html`) deixa a
+/// saída mais limpa, mas **apaga conteúdo em silêncio**: tabela com bloco dentro
+/// da célula (lista, vários parágrafos) não cabe em tabela de canos e, sem a
+/// saída HTML, desaparece inteira. Preferimos `<table>` legível a dado perdido —
+/// há teste fixando isso.
+///
+/// Ponto único: o teste de ponta a ponta lê daqui, para não divergir do que o
+/// app realmente faz.
+pub(crate) const IMPORT_MARKDOWN_DIALECT: &str = "gfm+yaml_metadata_block";
+
 async fn import_via_pandoc(app: &tauri::AppHandle, source: &Path, dest: &Path) -> Result<(), String> {
+    // As imagens do .docx são gravadas ao lado do .md, e o Pandoc escreve no
+    // arquivo o mesmo caminho que recebeu aqui. Por isso rodamos com a pasta de
+    // destino como diretório de trabalho e pedimos `.`: o link sai relativo
+    // (`media/imagem.png`) e o .md continua portátil — se a pasta mudar de
+    // lugar, imagem e texto viajam juntos.
+    let dest_dir = dest
+        .parent()
+        .ok_or_else(|| "Pasta de destino inválida.".to_string())?;
     let cmd = app
         .shell()
         .sidecar("pandoc")
         .map_err(|e| format!("Não foi possível localizar o Pandoc embutido: {e}"))?
+        .current_dir(dest_dir.to_path_buf())
         .args([
             source.as_os_str().to_string_lossy().to_string(),
             "--from".into(),
             "docx".into(),
             "--to".into(),
-            "markdown+yaml_metadata_block".into(),
+            IMPORT_MARKDOWN_DIALECT.into(),
             "--wrap".into(),
             "none".into(),
+            "--extract-media".into(),
+            ".".into(),
             "-o".into(),
             dest.as_os_str().to_string_lossy().to_string(),
         ]);
@@ -44,6 +74,30 @@ async fn import_via_pandoc(app: &tauri::AppHandle, source: &Path, dest: &Path) -
         .await
         .map_err(|e| format!("Falha ao executar o Pandoc: {e}"))?;
     check_output("Pandoc retornou um erro ao importar o .docx", &output)
+}
+
+/// Converte o `.docx` passando antes pela pré-passe que promove nível de tópico
+/// a estilo de título (ver `docx_outline`) — sem ela, documento montado por
+/// formatação direta chega ao Markdown sem nenhum `#`.
+///
+/// A pré-passe é um ganho, não um requisito: se ela falhar por qualquer motivo,
+/// a importação segue com o arquivo original em vez de abortar. Um `.docx`
+/// realmente inválido falha adiante, no Pandoc, com a mensagem dele.
+async fn import_docx(app: &tauri::AppHandle, source: &Path, dest: &Path) -> Result<(), String> {
+    let work_dir = std::env::temp_dir().join(format!("markforge-import-{}", Uuid::new_v4()));
+    if fs::create_dir_all(&work_dir).is_err() {
+        return import_via_pandoc(app, source, dest).await;
+    }
+
+    let prepared = docx_outline::prepare_for_import(source, &work_dir);
+    let effective_source = match prepared {
+        Ok(Some(ref path)) => path.as_path(),
+        Ok(None) | Err(_) => source,
+    };
+    let result = import_via_pandoc(app, effective_source, dest).await;
+
+    fs::remove_dir_all(&work_dir).ok();
+    result
 }
 
 /// Um .txt não tem estrutura para converter — o conteúdo vira o corpo do .md
@@ -90,7 +144,7 @@ pub async fn import_document(
         .and_then(|e| e.to_str())
         .map(|e| e.to_ascii_lowercase());
     match ext.as_deref() {
-        Some("docx") => import_via_pandoc(&app, &source, &dest).await?,
+        Some("docx") => import_docx(&app, &source, &dest).await?,
         Some("txt") => import_plain_text(&source, &dest)?,
         _ => return Err("Formato não suportado — escolha um arquivo .docx ou .txt.".to_string()),
     }

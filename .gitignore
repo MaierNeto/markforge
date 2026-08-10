@@ -37,3 +37,8 @@ ROADMAP-ESTRATEGICO.md
 # Retaguarda (cozinha): backlog real, dívida técnica, autocrítica, continuidade.
 # O repo é PÚBLICO — só o produto refinado sai daqui. O salão é o README/CHANGELOG/ROADMAP.
 docs/_interno/
+
+# Amostras reais usadas para reproduzir defeito — ficam SÓ na máquina local.
+# Documento de origem é insumo de investigação, não material de repositório:
+# fixture de teste é sintético. Blindado aqui por profundidade.
+bugs/
