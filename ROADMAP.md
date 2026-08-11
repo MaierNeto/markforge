@@ -7,9 +7,7 @@ O que já foi entregue está no [CHANGELOG.md](CHANGELOG.md).
 
 ## Agora
 
-* **Instalador em português e inglês.** O aplicativo é em português, mas o
-  assistente de instalação ainda aparece em inglês. Passará a ser gerado nos
-  dois idiomas.
+Sem trabalhos em andamento neste momento.
 
 ## Depois
 
