@@ -6,6 +6,15 @@ produto — não despejo de commits.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/);
 versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.8.0]
+
+### Adicionado
+
+- **Assistente de instalação em português e inglês.** O instalador usava
+  apenas o inglês. Agora o idioma do sistema é escolhido por padrão — e dá
+  para selecionar o outro no seletor antes de instalar. A escolha não muda o
+  que é instalado, só o idioma do assistente.
+
 ## [0.7.0]
 
 ### Corrigido
@@ -178,6 +187,7 @@ Recomendamos atualizar a partir das versões 0.1.x.
   DOCX e PDF com capa, cabeçalho e rodapé, navegação pela árvore de arquivos do
   projeto, templates de exportação, landing page e CI/CD.
 
+[0.8.0]: https://github.com/MaierNeto/markforge/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/MaierNeto/markforge/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/MaierNeto/markforge/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/MaierNeto/markforge/compare/v0.4.0...v0.5.0
