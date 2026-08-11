@@ -6,6 +6,29 @@ produto — não despejo de commits.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/);
 versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.7.0]
+
+### Corrigido
+
+- **Documento do Word cujas seções foram formatadas à mão chegava sem
+  hierarquia nenhuma.** Quando os títulos não usam um estilo de título — caso
+  comum em documento montado com negrito, tamanho e recuo —, as seções viravam
+  itens de lista ou trechos citados, e o arquivo exportado de volta não tinha
+  como reconstruir a navegação. Agora viram títulos de verdade, com a
+  hierarquia preservada.
+- **O sumário do Word entrava como texto, com os números de página
+  congelados** da última vez em que o documento foi aberto no Word. Ele deixa
+  de aparecer no Markdown: o sumário volta a ser montado a partir dos títulos
+  na hora de exportar, com a paginação certa.
+- **Figuras combinadas com formas — arranjo comum em capas — se perdiam na
+  importação**, sem aviso. Agora são preservadas e gravadas ao lado do `.md`,
+  com caminho relativo: se a pasta mudar de lugar, texto e imagens viajam
+  juntos.
+- **Marcação aparecia como texto solto na tela** depois de importar: âncoras de
+  sumário, atributos de título e tabelas em formato que o editor não exibe. O
+  Markdown gerado passa a usar apenas construções que o editor mostra. Tabela
+  grande demais para o formato de colunas continua saindo por inteiro.
+
 ## [0.6.0]
 
 ### Adicionado
@@ -155,6 +178,7 @@ Recomendamos atualizar a partir das versões 0.1.x.
   DOCX e PDF com capa, cabeçalho e rodapé, navegação pela árvore de arquivos do
   projeto, templates de exportação, landing page e CI/CD.
 
+[0.7.0]: https://github.com/MaierNeto/markforge/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/MaierNeto/markforge/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/MaierNeto/markforge/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/MaierNeto/markforge/compare/v0.3.0...v0.4.0
