@@ -16,6 +16,10 @@ precisa, de tempos em tempos, transformar esses arquivos em documentos formais
 - **Exportação com template.** Gere DOCX e PDF com capa, cabeçalho e rodapé
   consistentes, a partir de um template padrão incluso ou de um `.docx` de
   referência com a identidade visual da sua empresa.
+- **Traga o que já existe.** Importe `.docx`, `.pdf` e `.txt` e continue de onde
+  parou, em Markdown. A conversão recupera títulos, parágrafos e listas na ordem
+  de leitura do documento; como toda conversão automática, vale revisar o
+  resultado.
 - **Projeto inteiro, não só um arquivo.** Abra a raiz do seu repositório e
   navegue pela árvore de arquivos `.md` — ideal para pastas de controle de
   projetos com Claude Code e agentes similares.
