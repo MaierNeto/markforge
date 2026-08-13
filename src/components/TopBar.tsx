@@ -53,7 +53,7 @@ export function TopBar({ onExport, onManageTemplates, onOpenSettings }: TopBarPr
     if (!rootPath) return;
     const selected = await open({
       multiple: false,
-      filters: [{ name: "Documento", extensions: ["docx", "txt"] }],
+      filters: [{ name: "Documento", extensions: ["docx", "pdf", "txt"] }],
     });
     if (typeof selected === "string") await importDocumentFile(selected, rootPath);
   }

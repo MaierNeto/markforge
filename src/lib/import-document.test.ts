@@ -95,4 +95,32 @@ describe("Importar documento (.docx/.txt) para dentro do projeto aberto", () => 
     expect(api.importDocument).toHaveBeenCalledWith("/downloads/notas.txt", "/projeto");
     expect(useProjectStore.getState().openDoc?.path).toBe("/projeto/notas.md");
   });
+
+  it("importa .pdf do mesmo jeito (a store so repassa o caminho para o backend)", async () => {
+    api.listMarkdownTree.mockResolvedValue({
+      name: "projeto",
+      path: "/projeto",
+      is_dir: true,
+      children: [],
+    });
+    await act(async () => {
+      await useProjectStore.getState().openFolder("/projeto");
+    });
+
+    api.importDocument.mockResolvedValue("/projeto/Relatorio.pdf.md");
+    api.readFile.mockResolvedValue("# Relatorio\n\nConteudo extraido do PDF");
+    api.listMarkdownTree.mockResolvedValue({
+      name: "projeto",
+      path: "/projeto",
+      is_dir: true,
+      children: [{ name: "Relatorio.pdf.md", path: "/projeto/Relatorio.pdf.md", is_dir: false }],
+    });
+
+    await act(async () => {
+      await useProjectStore.getState().importDocumentFile("/downloads/Relatorio.pdf", "/projeto");
+    });
+
+    expect(api.importDocument).toHaveBeenCalledWith("/downloads/Relatorio.pdf", "/projeto");
+    expect(useProjectStore.getState().openDoc?.path).toBe("/projeto/Relatorio.pdf.md");
+  });
 });

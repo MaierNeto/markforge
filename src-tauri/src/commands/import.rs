@@ -7,6 +7,7 @@ use uuid::Uuid;
 use super::docx_outline;
 use super::export::check_output;
 use super::fs_commands::AllowedRoots;
+use super::pdf_import;
 
 /// Deriva o caminho do .md de destino: nome do .docx de origem (sem
 /// extensão), dentro da pasta de destino informada — que pode ser diferente
@@ -109,10 +110,21 @@ fn import_plain_text(source: &Path, dest: &Path) -> Result<(), String> {
     fs::write(dest, content).map_err(|e| format!("Não foi possível gravar o .md: {e}"))
 }
 
+/// Importa um `.pdf` convertendo para Markdown via `lopdf` + heurísticas (ver
+/// `pdf_import::import_pdf_to_markdown`). Grava o `.md` no destino e retorna o
+/// caminho. Não sobrescreve — colisão é tratada em `import_document`.
+fn import_pdf(source: &Path, dest: &Path) -> Result<(), String> {
+    let markdown = pdf_import::import_pdf_to_markdown(
+        source.as_os_str().to_string_lossy().to_string().as_str()
+    )?;
+    fs::write(dest, markdown).map_err(|e| format!("Não foi possível gravar o .md: {e}"))
+}
+
 /// Importa um documento existente convertendo para Markdown: `.docx` (OOXML)
-/// via Pandoc — o mesmo sidecar já usado na exportação, sentido contrário —
-/// e `.txt` como cópia literal do conteúdo. Não suporta o formato binário
-/// legado `.doc` (Word 97-2003); o Pandoc não lê esse formato.
+/// via Pandoc — o mesmo sidecar já usado na exportação, sentido contrário —,
+/// `.pdf` via `lopdf` + heurísticas (ver `pdf_import`), e `.txt` como cópia
+/// literal do conteúdo. Não suporta o formato binário legado `.doc`
+/// (Word 97-2003); o Pandoc não lê esse formato.
 #[tauri::command]
 pub async fn import_document(
     app: tauri::AppHandle,
@@ -145,8 +157,9 @@ pub async fn import_document(
         .map(|e| e.to_ascii_lowercase());
     match ext.as_deref() {
         Some("docx") => import_docx(&app, &source, &dest).await?,
+        Some("pdf") => import_pdf(&source, &dest)?,
         Some("txt") => import_plain_text(&source, &dest)?,
-        _ => return Err("Formato não suportado — escolha um arquivo .docx ou .txt.".to_string()),
+        _ => return Err("Formato não suportado — escolha um arquivo .docx, .pdf ou .txt.".to_string()),
     }
 
     Ok(dest.to_string_lossy().to_string())
@@ -154,7 +167,7 @@ pub async fn import_document(
 
 #[cfg(test)]
 mod tests {
-    use super::{derive_markdown_path, import_plain_text};
+    use super::{derive_markdown_path, import_pdf, import_plain_text};
     use std::path::PathBuf;
     use uuid::Uuid;
 
@@ -206,5 +219,22 @@ mod tests {
             derive_markdown_path(&PathBuf::from("/projeto/Relatorio.docx"), &PathBuf::from("/projeto")),
             PathBuf::from("/projeto/Relatorio.md")
         );
+    }
+
+    #[test]
+    fn import_pdf_converte_e_grava_md_com_headings() {
+        // Fixture sintético (LGPD: gerado por código, sem dado real).
+        let source = PathBuf::from("../docs/_interno/pdf-fixtures/simple_headings.pdf");
+        let dir = std::env::temp_dir().join(format!("markforge-test-{}", Uuid::new_v4()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let dest = dir.join("simple_headings.md");
+
+        import_pdf(&source, &dest).expect("import_pdf deveria gravar o .md");
+
+        let written = std::fs::read_to_string(&dest).unwrap();
+        assert!(written.contains("# Relatório de Vendas"), "H1 deveria virar '# '");
+        assert!(written.contains("## Primeiro Trimestre"), "H2 deveria virar '## '");
+
+        std::fs::remove_dir_all(&dir).ok();
     }
 }

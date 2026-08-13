@@ -44,7 +44,7 @@ export function WelcomeScreen({ onOpenSettings }: WelcomeScreenProps) {
     setImportError(null);
     const selected = await open({
       multiple: false,
-      filters: [{ name: "Documento", extensions: ["docx", "txt"] }],
+      filters: [{ name: "Documento", extensions: ["docx", "pdf", "txt"] }],
     });
     if (typeof selected !== "string") return;
     setImporting(true);
