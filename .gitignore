@@ -46,8 +46,6 @@ bugs/
 # Documento não entra no repositório — nem de amostra, nem de fixture de teste.
 # Os fixtures de PDF se geram na máquina, com scripts/generate_pdf_fixtures.py,
 # e os testes que dependem deles se ignoram quando não estão presentes.
-# Exceção única: o template DOCX padrão, que é recurso do aplicativo (declarado
-# em src-tauri/tauri.conf.json) e se gera com scripts/generate_reference_docx.py.
 *.pdf
 *.doc
 *.docx
@@ -56,4 +54,14 @@ bugs/
 *.xlsx
 *.ppt
 *.pptx
-!templates/default/reference.docx
+
+# Exceção: os templates de formatação em templates/ NÃO são documento de
+# informação — são recurso do aplicativo, declarados em src-tauri/tauri.conf.json
+# e gerados por script (scripts/generate_reference_docx.py). Ficam versionados, e
+# alteração neles é para ser commitada como qualquer outro arquivo do produto.
+#
+# A exceção é por PADRÃO, não por nome de arquivo: um template novo amanhã cairia
+# no ignore em silêncio se dependesse de estar listado aqui. Segue valendo só para
+# formato de template — documento solto dentro de templates/ continua barrado.
+!templates/**/*.docx
+!templates/**/*.dotx
