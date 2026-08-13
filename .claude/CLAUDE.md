@@ -62,3 +62,41 @@ seção *Segurança* do CHANGELOG (descreve o que foi resolvido, não como explo
 > de decisões vivem na **memória local do projeto** (Claude Code). Pesquisa, estratégia e
 > hipótese não validada vivem no **`ROADMAP-ESTRATEGICO.md`**, que o `.gitignore` mantém
 > fora do remoto. O `ROADMAP.md` público só recebe capacidade **já validada**.
+
+---
+
+## Camada operacional do A-SDLC — contrato de rastreabilidade 🌐
+
+> Incorporado em 12/08/2026 (A-SDLC v0.8.0+, `processo/INICIALIZACAO_DE_PROJETO.md` Passo 4).
+
+**Contrato:** a **diretiva deste projeto** e o **`settings.json` que carrega o hook de teste**
+são **arquivos rastreados pelo git**. Não são conveniência de quem configurou a máquina — são
+o que faz o gate existir. Não rastreados, o projeto tem gate em **uma máquina só**, e nada dá
+erro: o próximo clone, colaborador ou CI fica sem diretiva e sem gate.
+
+**Caminho canônico:** `.claude/CLAUDE.md` e `.claude/settings.json`.
+
+**Prova (presença se prova, não se presume):**
+
+```bash
+git ls-files | grep -E "^(CLAUDE\.md|\.claude/CLAUDE\.md)$"   # a diretiva viaja com o repo?
+git ls-files | grep -E "^\.claude/settings\.json$"            # o hook viaja com o repo?
+```
+
+Saída vazia em qualquer uma das duas = **falha de fundação**, não pendência menor.
+
+**Se um `.gitignore` (frequentemente herdado de upstream OSS) engolir `.claude/`:**
+
+1. A diretiva vai para a **raiz** (`CLAUDE.md`) — caminho igualmente suportado, fora da
+   convenção de ignore herdada. Declarar o desvio aqui, para que sessão futura não "corrija"
+   de volta e reintroduza o problema em silêncio.
+2. O `settings.json` **não tem alternativa de caminho** — só resta corrigir a regra:
+
+   ```gitignore
+   .claude/*                      # excluir o CONTEÚDO, não o diretório
+   !.claude/settings.json
+   .claude/settings.local.json
+   ```
+
+   `.claude/` + `!.claude/settings.json` **não funciona**: o git não re-inclui arquivo cujo
+   diretório-pai está excluído. A negação sozinha não faz nada e parece ter feito.
