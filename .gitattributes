@@ -1,0 +1,23 @@
+# Arquivos binários não podem sofrer conversão de fim de linha.
+#
+# Sem declaração explícita o git classifica pelo conteúdo, e binário sem byte
+# nulo passa por texto: num clone com core.autocrlf=true ele sai convertido de
+# LF para CRLF, e o arquivo deixa de abrir. O `.docx` do template escapa por ser
+# um zip; formatos com envelope de texto, não.
+
+*.pdf   binary
+*.docx  binary
+*.dotx  binary
+*.png   binary
+*.ico   binary
+*.icns  binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.exe   binary
+*.deb   binary
+*.zip   binary

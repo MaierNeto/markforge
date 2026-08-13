@@ -16,7 +16,7 @@
 //! uma página só: o caso mais fácil que existe. O PDF do Typst traz fonte
 //! embutida com `ToUnicode` e várias páginas — o caso que o mundo real entrega.
 //!
-//! O texto do documento-ouro é sintético e neutro (regra de dado real).
+//! O texto do documento-ouro é escrito aqui mesmo, fictício e neutro.
 
 use std::path::{Path, PathBuf};
 

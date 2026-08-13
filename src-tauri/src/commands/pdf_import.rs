@@ -828,8 +828,15 @@ pub fn import_pdf_to_markdown(path: &str) -> Result<String, String> {
 mod tests {
     use super::*;
 
-    fn fixture_path(name: &str) -> String {
-        format!("../docs/_interno/pdf-fixtures/{name}")
+    /// Caminho do fixture, **se ele existir nesta máquina**.
+    ///
+    /// Documento não entra no repositório — nem de amostra, nem de fixture. Os
+    /// PDFs de teste se geram localmente com `scripts/generate_pdf_fixtures.py`;
+    /// onde não estiverem, o teste se ignora, mesma convenção dos testes que
+    /// dependem dos binários embutidos.
+    fn fixture(name: &str) -> Option<String> {
+        let caminho = format!("tests/fixtures/{name}");
+        std::path::Path::new(&caminho).exists().then_some(caminho)
     }
 
     fn elemento(text: &str, y: f32, size: f32, bold: bool) -> TextElement {
@@ -1375,7 +1382,11 @@ mod tests {
 
     #[test]
     fn test_extract_simple_headings() {
-        let elements = extract_pdf_text_with_positions(&fixture_path("simple_headings.pdf")).unwrap();
+        let Some(caminho) = fixture("simple_headings.pdf") else {
+            eprintln!("fixtures ausentes — teste de extração ignorado");
+            return;
+        };
+        let elements = extract_pdf_text_with_positions(&caminho).unwrap();
         assert!(!elements.is_empty(), "Deveria extrair elementos de texto");
 
         let all_text: String = elements.iter().map(|e| e.text.clone()).collect();
@@ -1399,18 +1410,26 @@ mod tests {
             "image_caption.pdf",
             "scanned.pdf",
         ];
-        for fixture in fixtures {
-            let elements = extract_pdf_text_with_positions(&fixture_path(fixture))
-                .unwrap_or_else(|e| panic!("Failed to extract {fixture}: {e}"));
-            if fixture != "scanned.pdf" {
-                assert!(!elements.is_empty(), "{fixture} deveria ter texto");
+        for nome in fixtures {
+            let Some(caminho) = fixture(nome) else {
+                eprintln!("fixtures ausentes — teste de cobertura ignorado");
+                return;
+            };
+            let elements = extract_pdf_text_with_positions(&caminho)
+                .unwrap_or_else(|e| panic!("Failed to extract {nome}: {e}"));
+            if nome != "scanned.pdf" {
+                assert!(!elements.is_empty(), "{nome} deveria ter texto");
             }
         }
     }
 
     #[test]
     fn test_import_pdf_to_markdown_command() {
-        let result = import_pdf_to_markdown(&fixture_path("simple_headings.pdf"));
+        let Some(caminho) = fixture("simple_headings.pdf") else {
+            eprintln!("fixtures ausentes — teste de importação ignorado");
+            return;
+        };
+        let result = import_pdf_to_markdown(&caminho);
         assert!(result.is_ok(), "import_pdf_to_markdown deveria retornar Ok");
         let markdown = result.unwrap();
         assert!(!markdown.is_empty(), "Markdown não deveria estar vazio");
@@ -1419,7 +1438,11 @@ mod tests {
 
     #[test]
     fn test_import_pdf_to_markdown_has_headings() {
-        let markdown = import_pdf_to_markdown(&fixture_path("simple_headings.pdf")).unwrap();
+        let Some(caminho) = fixture("simple_headings.pdf") else {
+            eprintln!("fixtures ausentes — teste de títulos ignorado");
+            return;
+        };
+        let markdown = import_pdf_to_markdown(&caminho).unwrap();
         assert!(markdown.contains("# Relatório de Vendas"), "faltou H1, saiu:\n{markdown}");
         assert!(markdown.contains("## Primeiro Trimestre"), "faltou H2, saiu:\n{markdown}");
     }
