@@ -1248,9 +1248,7 @@ mod tests {
         let corpo = format!(
             "{}{}{}",
             // Título com indicador de sumário, como o Word grava.
-            format!(
-                r#"<w:p><w:pPr><w:pStyle w:val="A"/><w:outlineLvl w:val="0"/></w:pPr><w:bookmarkStart w:id="1" w:name="_Toc1"/><w:r><w:t>Titulo Sintetico</w:t></w:r><w:bookmarkEnd w:id="1"/></w:p>"#
-            ),
+            r#"<w:p><w:pPr><w:pStyle w:val="A"/><w:outlineLvl w:val="0"/></w:pPr><w:bookmarkStart w:id="1" w:name="_Toc1"/><w:r><w:t>Titulo Sintetico</w:t></w:r><w:bookmarkEnd w:id="1"/></w:p>"#,
             paragraph(r#"<w:pStyle w:val="Normal"/>"#, "Corpo do paragrafo."),
             simple_table(),
         );
@@ -1351,17 +1349,12 @@ mod tests {
         let dir = temp_dir();
 
         let corpo = format!(
-            "{}{}{}{}",
+            "{}{}{}{}{}",
             content_control("Table of Contents", &toc_entry("Titulo Sintetico")),
-            format!(
-                r#"<w:p><w:pPr><w:pStyle w:val="PargrafodaLista"/><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr><w:outlineLvl w:val="0"/></w:pPr><w:r><w:t>Titulo Sintetico</w:t></w:r></w:p>"#
-            ),
+            r#"<w:p><w:pPr><w:pStyle w:val="PargrafodaLista"/><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr><w:outlineLvl w:val="0"/></w:pPr><w:r><w:t>Titulo Sintetico</w:t></w:r></w:p>"#,
             paragraph(r#"<w:pStyle w:val="SemEspacamento"/><w:outlineLvl w:val="1"/>"#, "Subtitulo Sintetico"),
-            format!(
-                "{}{}",
-                paragraph(r#"<w:pStyle w:val="Normal"/>"#, "Corpo do paragrafo."),
-                simple_table()
-            ),
+            paragraph(r#"<w:pStyle w:val="Normal"/>"#, "Corpo do paragrafo."),
+            simple_table(),
         );
         let mut parts = package_skeleton();
         parts.push((DOCUMENT_PART, document_with(&corpo)));
