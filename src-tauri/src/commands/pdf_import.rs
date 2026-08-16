@@ -1116,7 +1116,7 @@ mod tests {
     /// (Y alto) se enfia antes do rodapé da página 1 (Y baixo).
     #[test]
     fn ordem_respeita_a_pagina_antes_do_y() {
-        let mut els = vec![
+        let mut els = [
             TextElement { page: 2, y: 780.0, ..elemento("topo da pagina 2", 780.0, 10.0, false) },
             TextElement { page: 1, y: 60.0, ..elemento("rodape da pagina 1", 60.0, 10.0, false) },
         ];

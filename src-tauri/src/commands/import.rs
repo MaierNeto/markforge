@@ -56,7 +56,7 @@ async fn import_via_pandoc(app: &tauri::AppHandle, source: &Path, dest: &Path) -
         .shell()
         .sidecar("pandoc")
         .map_err(|e| format!("Não foi possível localizar o Pandoc embutido: {e}"))?
-        .current_dir(dest_dir.to_path_buf())
+        .current_dir(dest_dir)
         .args([
             source.as_os_str().to_string_lossy().to_string(),
             "--from".into(),
