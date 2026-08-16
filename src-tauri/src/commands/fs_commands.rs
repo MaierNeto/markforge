@@ -53,7 +53,7 @@ fn register_root(roots: &AllowedRoots, path: &Path) {
 }
 
 /// Porteiro: só deixa passar caminho dentro de alguma raiz aberta.
-fn ensure_allowed(roots: &AllowedRoots, path: &Path) -> Result<(), String> {
+pub(crate) fn ensure_allowed(roots: &AllowedRoots, path: &Path) -> Result<(), String> {
     let list = roots
         .0
         .lock()
@@ -98,11 +98,11 @@ const IGNORED_DIRS: &[&str] = &[
 
 #[derive(Serialize, Clone)]
 pub struct FileNode {
-    name: String,
-    path: String,
-    is_dir: bool,
+    pub(crate) name: String,
+    pub(crate) path: String,
+    pub(crate) is_dir: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
-    children: Option<Vec<FileNode>>,
+    pub(crate) children: Option<Vec<FileNode>>,
 }
 
 fn is_markdown(path: &Path) -> bool {
@@ -110,6 +110,12 @@ fn is_markdown(path: &Path) -> bool {
         path.extension().and_then(|e| e.to_str()).map(|e| e.to_ascii_lowercase()),
         Some(ext) if ext == "md" || ext == "markdown"
     )
+}
+
+/// Varre a pasta montando a árvore de `.md`. Compartilhado com a exportação de
+/// mapa mental, que precisa da mesma hierarquia — e das mesmas exclusões.
+pub(crate) fn scan_markdown_tree(dir: &Path) -> FileNode {
+    scan_dir(dir)
 }
 
 fn scan_dir(dir: &Path) -> FileNode {

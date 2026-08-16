@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { useProjectStore } from "@/store/projectStore";
+import { isFeatureEnabled, FEATURE_MINDMAP_EXPORT } from "@/lib/features";
+import { exportProjectMindmap } from "@/lib/mindmap-export";
 
 interface TopBarProps {
   onExport: () => void;
@@ -26,6 +28,8 @@ export function TopBar({ onExport, onManageTemplates, onOpenSettings }: TopBarPr
   const saveAs = useProjectStore((s) => s.saveAs);
   const importDocumentFile = useProjectStore((s) => s.importDocumentFile);
   const [openMenuVisible, setOpenMenuVisible] = useState(false);
+  const [mindmapStatus, setMindmapStatus] = useState<string>("");
+  const mindmapEnabled = isFeatureEnabled(FEATURE_MINDMAP_EXPORT);
 
   const relativePath =
     openDoc && rootPath ? openDoc.path.replace(rootPath, "").replace(/^[\\/]/, "") : "";
@@ -65,6 +69,16 @@ export function TopBar({ onExport, onManageTemplates, onOpenSettings }: TopBarPr
       filters: [{ name: "Markdown", extensions: ["md", "markdown"] }],
     });
     if (newPath) await saveAs(newPath);
+  }
+
+  async function handleExportMindmap() {
+    setMindmapStatus("Gerando…");
+    try {
+      const gravado = await exportProjectMindmap(rootPath);
+      setMindmapStatus(`Mapa salvo em ${gravado}`);
+    } catch (e) {
+      setMindmapStatus(`Não foi possível gerar o mapa: ${e}`);
+    }
   }
 
   return (
@@ -121,6 +135,16 @@ export function TopBar({ onExport, onManageTemplates, onOpenSettings }: TopBarPr
         <button className="mf-btn-secondary" onClick={onManageTemplates}>
           Templates
         </button>
+        {mindmapEnabled && (
+          <button
+            className="mf-btn-secondary"
+            disabled={!rootPath}
+            onClick={handleExportMindmap}
+            title={mindmapStatus || "Exporta a pasta aberta como mapa mental (.mm)"}
+          >
+            Mapa mental
+          </button>
+        )}
         <button className="mf-btn-primary" disabled={!openDoc} onClick={onExport}>
           Exportar…
         </button>

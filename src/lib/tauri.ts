@@ -93,6 +93,11 @@ export const api = {
   exportDocument(options: ExportOptions): Promise<ExportResult> {
     return invoke("export_document", { options });
   },
+
+  /** Exporta a pasta `root` como mapa mental `.mm`. Devolve o caminho gravado. */
+  exportMindmap(root: string, outPath: string): Promise<string> {
+    return invoke("export_mindmap", { root, outPath });
+  },
   importDocument(sourcePath: string, destDir: string): Promise<string> {
     return invoke("import_document", { sourcePath, destDir });
   },
