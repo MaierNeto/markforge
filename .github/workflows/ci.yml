@@ -54,6 +54,15 @@ jobs:
         working-directory: src-tauri
         run: cargo check
 
+      # Documento não entra no repositório — nem como fixture de teste. Os PDFs
+      # de teste são gerados aqui, a cada execução, para que os testes de
+      # importação rodem de verdade no CI em vez de se ignorarem por falta de
+      # arquivo.
+      - name: Gerar fixtures de PDF
+        run: |
+          python3 -m pip install --quiet --disable-pip-version-check reportlab pillow
+          python3 scripts/generate_pdf_fixtures.py
+
       - name: Testes unitários (Rust)
         working-directory: src-tauri
         run: cargo test --lib
