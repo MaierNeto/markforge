@@ -168,6 +168,14 @@
   color: var(--mf-navy-800);
 }
 
+.mf-welcome-sub {
+  margin: 0 0 14px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--mf-gray-400);
+}
+
 .mf-welcome-card p {
   color: var(--mf-gray-600);
   font-size: 14px;

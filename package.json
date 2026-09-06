@@ -4,14 +4,17 @@
   "version": "0.8.0",
   "type": "module",
   "description": "Editor visual (WYSIWYG) para arquivos Markdown, com exportação para DOCX e PDF a partir de templates com capa, cabeçalho e rodapé.",
-  "author": "Walter Maier Neto",
+  "author": "Navyra",
   "license": "Apache-2.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "higiene": "bash scripts/higiene.sh",
+    "smoke": "bash scripts/smoke.sh",
+    "monitor": "bash scripts/monitor.sh"
   },
   "dependencies": {
     "@milkdown/crepe": "^7.6.4",

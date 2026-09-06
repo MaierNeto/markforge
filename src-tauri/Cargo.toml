@@ -4,7 +4,7 @@ name = "markforge"
 # a tag da release divergir deste número.
 version = "0.8.0"
 description = "Editor visual (WYSIWYG) para arquivos Markdown, com exportação para DOCX e PDF."
-authors = ["Walter Maier Neto"]
+authors = ["Navyra"]
 edition = "2021"
 rust-version = "1.77"
 

@@ -4,7 +4,7 @@
 Markforge — editor visual (WYSIWYG) para arquivos Markdown, com exportação para DOCX e
 PDF a partir de templates com capa, cabeçalho e rodapé. O `.md` é sempre a fonte da
 verdade. Stack: React 18 + Vite + TypeScript (frontend) · Tauri 2 / Rust (desktop).
-Autor: Walter Maier Neto.
+Autor: Navyra (Walter Maier Neto).
 
 ## Perfil do projeto (o seletor de aplicabilidade)
 
