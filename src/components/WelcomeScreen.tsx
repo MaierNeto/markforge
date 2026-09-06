@@ -63,6 +63,7 @@ export function WelcomeScreen({ onOpenSettings }: WelcomeScreenProps) {
       <div className="mf-welcome-card">
         <div className="mf-welcome-mark">M</div>
         <h1>Markforge</h1>
+        <p className="mf-welcome-sub">Um produto Navyra</p>
         <p>
           Edite visualmente os arquivos <code>.md</code> do seu projeto e exporte
           documentos DOCX/PDF prontos, com capa, cabeçalho e rodapé.

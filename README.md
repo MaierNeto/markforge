@@ -1,5 +1,7 @@
 # Markforge
 
+**Um produto Navyra.**
+
 **Editor visual (WYSIWYG) para arquivos Markdown, com exportação para DOCX e PDF prontos para entrega.**
 
 Markforge foi criado para quem trabalha com documentação de projetos guiados por

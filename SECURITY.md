@@ -2,8 +2,8 @@
 
 ## Supported Versions
 
-O Markforge é mantido por uma pessoa só, com uma única linha de
-desenvolvimento. Correções de segurança saem na **última versão publicada**
+O Markforge é mantido pela equipe Navyra, com equipe de desenvolvimento
+enxuta. Correções de segurança saem na **última versão publicada**
 — não há suporte retroativo a versões anteriores.
 
 | Version | Supported          |
