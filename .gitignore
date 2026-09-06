@@ -65,3 +65,26 @@ bugs/
 # formato de template — documento solto dentro de templates/ continua barrado.
 !templates/**/*.docx
 !templates/**/*.dotx
+
+# Higiene A-SDLC (26/08/2026): tudo que comeca com "_" e arquivo/pasta de trabalho
+# local (rascunho, arquivo morto, backup, copia _legado) - nunca sobe ao remoto.
+_*
+**/_*
+
+# Segredos e credenciais — NUNCA versionar. Blindado por padrão, não por nome.
+# O .env.example declara as chaves SEM valor (contrato de quem chega).
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.keystore
+*.jks
+*.p12
+service-account*.json
+credentials.json
+secrets.yaml
+secret*.json
+
+# Dumps de dados — podem conter PII; nunca versionar.
+dump*.sql
