@@ -88,3 +88,7 @@ secret*.json
 
 # Dumps de dados — podem conter PII; nunca versionar.
 dump*.sql
+
+# Configuração de processo (retaguarda) - não versionada
+.claude/
+
