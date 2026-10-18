@@ -12,9 +12,19 @@ import { TemplateManager } from "@/components/TemplateManager";
 import { SettingsDialog } from "@/components/SettingsDialog";
 import { ExternalChangeBanner } from "@/components/ExternalChangeBanner";
 import { CloseConfirmDialog } from "@/components/CloseConfirmDialog";
+import { DevTestPage } from "@/components/DevTestPage";
 import "@/styles/app.css";
 
 export default function App() {
+  // Harness DEV isolado p/ Playwright (Marp round-trip) — só em `vite dev`.
+  // Navegar c/ ?dev=marp-roundtrip. Não requer Tauri.
+  if (import.meta.env.DEV) {
+    const qs = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    if (qs?.get("dev") === "marp-roundtrip") {
+      return <DevTestPage />;
+    }
+  }
+
   const rootPath = useProjectStore((s) => s.rootPath);
   const openDoc = useProjectStore((s) => s.openDoc);
   const updateBody = useProjectStore((s) => s.updateBody);
@@ -25,6 +35,7 @@ export default function App() {
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
 
   // Abre o arquivo passado ao iniciar (associação de .md) e escuta pedidos de
   // abertura vindos de uma segunda instância (duplo-clique com o app já aberto).
@@ -71,6 +82,13 @@ export default function App() {
     return () => unlisten?.();
   }, [handleCloseRequested]);
 
+  // RFC-007: Setup link handler para abrir links externos no navegador padrão
+  useEffect(() => {
+    if (editorContainerRef.current) {
+      setupLinkHandler(editorContainerRef.current);
+    }
+  }, []);
+
   if (!rootPath && !openDoc) {
     return (
       <>
@@ -91,7 +109,7 @@ export default function App() {
         <aside className="mf-sidebar">
           <FileTree />
         </aside>
-        <main className="mf-main">
+        <main className="mf-main" ref={editorContainerRef}>
           {openDoc ? (
             <>
               <ExternalChangeBanner />
