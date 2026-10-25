@@ -65,3 +65,6 @@ bugs/
 # formato de template — documento solto dentro de templates/ continua barrado.
 !templates/**/*.docx
 !templates/**/*.dotx
+
+# retaguarda do agente: nao vai ao repo publico (diretiva do titular 06/09/2026)
+.claude/
