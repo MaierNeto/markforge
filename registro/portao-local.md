@@ -50,3 +50,23 @@ GitHub (tag `v*`); com ele aposentado, gerar instalador + publicar + taggear
 passam a exigir ato explícito do titular. Nada foi publicado nem taggeado
 nesta fatia.
 
+
+## 2026-10-25 22:54 GMT-3 — reconferência do push da conversão
+
+- **Empurrado:** `main -> main` (`975cafc..908e51b`, 3 commits: `eb5b6e6`
+  aposento da automação, `fa8aeaa` portão local + baseline + AGENTS + registro,
+  `908e51b` lavração da corrida 3).
+- **Conferência lida de volta:** `git fetch` + `status -sb` → `main...origin/main`
+  em par; `origin/main` = `908e51b1…` (releitura às 22:54 GMT-3). Fast-forward
+  limpo, sem força, sem tag, sem release.
+- **Pós-push, job anti-retorno reexecutado:** 18 achados em pontas de ref
+  (eram 24; `main` local, `origin/main` e `origin/HEAD` ficaram limpos com o
+  push) — todos contidos no baseline, subset válido, `LAUDO-MONITORADO`.
+  Restam os ramos `feat/*` locais/remotos e o ramo órfão do Dependabot;
+  apagá-los é ato do titular.
+- **Árvore concorrente declarada (não é minha, deixei lá):**
+  `package-lock.json` modificado por sessão irmã (3 linhas) — não viajou em
+  nenhum commit desta fatia.
+- **Ato seguinte (ordinário):** esta entrada de reconferência é commitada e
+  empurrada em seguida; sua própria reconferência é o estado em par do terminal
+  da fatia.
