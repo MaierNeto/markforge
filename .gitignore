@@ -88,3 +88,6 @@ secret*.json
 
 # Dumps de dados — podem conter PII; nunca versionar.
 dump*.sql
+
+# retaguarda do agente: nao vai ao repo publico (diretiva do titular 06/09/2026)
+.claude/
