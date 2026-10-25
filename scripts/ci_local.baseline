@@ -10,41 +10,22 @@
 # front-end-tests: 15 suites falhando medidos na mesma corrida — origem 975cafc (vitest.config.ts
 #   herdado sem o alias '@' do vite.config.ts; tauri-config.test.ts usa URL que o Windows recusa).
 #   Decisao pendente do dono: idem — conserto pela sessao irma e reciclagem desta secao.
-# sem-automacao-github: 24 achados em pontas de ref medidos na corrida 1 — os workflows
-#   aposentados em 25/10 (fatia do aposento) continuam vivos nas arvores de ramos mortos/
-#   feature locais e remotos (inclusive o ramo dependabot que a automacao criou). Apagar ou
-#   promover ramo e higiene decidida pelo titular (item 9); o portao nao apaga ramo alheio.
+# sem-automacao-github: ZERO chaves — secao encerrada em 2026-10-25 por ordem do titular.
+#   Os 24 achados contados na corrida 1 (workflows vivos em arvores de pontas velhas) foram
+#   CONSOLIDADOS, nao perdoados: as 4 pontas feat/* tiveram a ponta remota fundida na local
+#   (merge, sem forca) e os dois aposentados em commit proprio (3ca84e8, 9950408, 2a4e803,
+#   1150392 — local == remoto conferido), e o ramo órfão do Dependabot foi podado no remoto
+#   (hash lavrado: 70da0f145e55a91cdcec223b4ccf87c1ae667a2b; nada se perdeu — o bump de
+#   vite 8.2.0 que ele propunha esta superado no main, que roda ^8.2.1). Medida depois:
+#   11 pontas conferidas, 0 achados. Quem reentrar, morde: isca provada nesta rodada
+#   (workflow de volta em qualquer ponta = ACHADO NOVO FORA DO BASELINE = FAIL).
 #   O TREE (arvore viva) NUNCA entra no baseline: automacao no tree bloqueia sempre.
 #
-# contagem total medida: 43 chaves (4 + 15 + 24) — corrida 1 de 2026-10-25, tree == 975cafc + aposento em staging
+# contagem total medida: 19 chaves (4 + 15 + 0) — re-fundada na corrida de 2026-10-25 23:46
 front-end-build|src/App.tsx(38,30): error TS2304: Cannot find name 'useRef'.
 front-end-build|src/App.tsx(88,7): error TS2304: Cannot find name 'setupLinkHandler'.
 front-end-build|src/lib/link-handler.ts(15,22): error TS2307: Cannot find module '@tauri-apps/api/shell' or its corresponding type declarations.
 front-end-build|src/lib/link-handler.ts(61,25): error TS7006: Parameter 'err' implicitly has an 'any' type.
-sem-automacao-github|refs/heads/feat/exportar-mapa-mental::.github/workflows/ci.yml
-sem-automacao-github|refs/heads/feat/exportar-mapa-mental::.github/workflows/release.yml
-sem-automacao-github|refs/heads/feat/importacao-fidelidade-docx::.github/workflows/ci.yml
-sem-automacao-github|refs/heads/feat/importacao-fidelidade-docx::.github/workflows/release.yml
-sem-automacao-github|refs/heads/feat/instalador-pt-en::.github/workflows/ci.yml
-sem-automacao-github|refs/heads/feat/instalador-pt-en::.github/workflows/release.yml
-sem-automacao-github|refs/heads/feat/pdf-import-poc::.github/workflows/ci.yml
-sem-automacao-github|refs/heads/feat/pdf-import-poc::.github/workflows/release.yml
-sem-automacao-github|refs/heads/main::.github/workflows/ci.yml
-sem-automacao-github|refs/heads/main::.github/workflows/release.yml
-sem-automacao-github|refs/remotes/origin/HEAD::.github/workflows/ci.yml
-sem-automacao-github|refs/remotes/origin/HEAD::.github/workflows/release.yml
-sem-automacao-github|refs/remotes/origin/dependabot/npm_and_yarn/npm_and_yarn-62ce72d0a2::.github/workflows/ci.yml
-sem-automacao-github|refs/remotes/origin/dependabot/npm_and_yarn/npm_and_yarn-62ce72d0a2::.github/workflows/release.yml
-sem-automacao-github|refs/remotes/origin/feat/exportar-mapa-mental::.github/workflows/ci.yml
-sem-automacao-github|refs/remotes/origin/feat/exportar-mapa-mental::.github/workflows/release.yml
-sem-automacao-github|refs/remotes/origin/feat/importacao-fidelidade-docx::.github/workflows/ci.yml
-sem-automacao-github|refs/remotes/origin/feat/importacao-fidelidade-docx::.github/workflows/release.yml
-sem-automacao-github|refs/remotes/origin/feat/instalador-pt-en::.github/workflows/ci.yml
-sem-automacao-github|refs/remotes/origin/feat/instalador-pt-en::.github/workflows/release.yml
-sem-automacao-github|refs/remotes/origin/feat/pdf-import-poc::.github/workflows/ci.yml
-sem-automacao-github|refs/remotes/origin/feat/pdf-import-poc::.github/workflows/release.yml
-sem-automacao-github|refs/remotes/origin/main::.github/workflows/ci.yml
-sem-automacao-github|refs/remotes/origin/main::.github/workflows/release.yml
 front-end-tests|src/lib/close-save.test.ts
 front-end-tests|src/lib/create-file.test.ts
 front-end-tests|src/lib/directory-reload.test.ts
