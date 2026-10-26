@@ -51,13 +51,13 @@ passam a exigir ato explícito do titular. Nada foi publicado nem taggeado
 nesta fatia.
 
 
-## 2026-10-25 22:54 GMT-3 — reconferência do push da conversão
+## 2026-10-25 19:54 GMT-3 — reconferência do push da conversão
 
 - **Empurrado:** `main -> main` (`975cafc..908e51b`, 3 commits: `eb5b6e6`
   aposento da automação, `fa8aeaa` portão local + baseline + AGENTS + registro,
   `908e51b` lavração da corrida 3).
 - **Conferência lida de volta:** `git fetch` + `status -sb` → `main...origin/main`
-  em par; `origin/main` = `908e51b1…` (releitura às 22:54 GMT-3). Fast-forward
+  em par; `origin/main` = `908e51b1…` (releitura às 19:54 GMT-3). Fast-forward
   limpo, sem força, sem tag, sem release.
 - **Pós-push, job anti-retorno reexecutado:** 18 achados em pontas de ref
   (eram 24; `main` local, `origin/main` e `origin/HEAD` ficaram limpos com o
@@ -72,7 +72,7 @@ nesta fatia.
   da fatia.
 
 
-## 2026-10-25 23:52 GMT-3 — sync por merge e aposento das pontas velhas (ordem do titular)
+## 2026-10-25 20:50 GMT-3 — sync por merge e aposento das pontas velhas (ordem do titular)
 
 - **O que se mediu antes de tocar:** o `main` estava limpo e em par (`2ecce7a`), mas o gate
   com varredura de pontas de ref dava **18 achados em 9 pontas** — os dois workflows
@@ -108,14 +108,30 @@ nesta fatia.
   BASELINE: sem-automacao-github :: refs/heads/tmp-isca-rfc013::.github/workflows/isca-rfc013.yml`,
   veredito FAIL, rc=1; contra-exemplo = isca removida → PASS, rc=0. Resíduo da bancada
   apagado (worktree e ramo `tmp-isca-rfc013` não existem mais).
-- **Veredito lavrado:** `bash scripts/ci_local.sh --apenas sem-automacao` às 23:52 GMT-3
+- **Veredito lavrado:** `bash scripts/ci_local.sh --apenas sem-automacao` às 20:50 GMT-3
   sobre `main` == `2ecce7a` + esta fatia → **1/1 verdes (0 monitorado, 0 nao-executado,
   0 vermelho)**, 11 pontas de ref conferidas, 0 achados. Suíte inteira **não** reexecutada
   nesta rodada: a árvore está com sessão concorrente (`package-lock.json` modificado por
   irmã, fora deste commit) e os jobs de frontend escrevem `dist/` na mesma árvore — a
-  corrida oficial da conversão segue lavrada na entrada de 22:54 acima.
+  corrida oficial da conversão segue lavrada na entrada de 19:54 acima.
 - **Pendências que isto NÃO fecha:** o mesmo defeito existe em `estudo-facil` (o
   `.github/workflows/ci.yml` vive na ponta `master`, ramo de release) e em
   `Portais/claustrum` (vive na ponta `main`) — lá o corte precisa chegar ao ramo default,
   e é decisão do titular promover. E o `audita_estacao.sh` mede só o índice do branch
   checkout: enquanto não varrer pontas de ref, o `auto=0` dele é verde parcial.
+
+## 2026-10-25 23:20 GMT-3 — correção de hora lavrada e fechamento de duas pendências
+
+- **Hora:** as duas entradas acima traziam 22:54 e 23:52. A hora real conferida contra a data
+  dos próprios commits: `2ecce7a` = 19:54 -0300 e `9a970ad` = 20:50 -0300. O desvio de ~3 h vem de
+  `TZ=America/Sao_Paulo date`, que degrada para UTC calado neste Git Bash (medido agora: `date`
+  devolve -0300 e a mesma chamada com a TZ nomeada devolve +0000). As horas foram corrigidas no
+  texto e a fonte do relógio passa a ser o relógio local da estação.
+- **Pendências fechadas por ordem do titular na mesma noite:** o corte chegou às pontas que
+  faltavam — `estudo-facil` `master` (commit `08f01d9`, ledger D-68 no próprio ramo) e
+  `Portais/claustrum` `main` (corte `6e621be`, instrumento transplantado `488b80b`, veredito
+  `020f7d5`, lavrado com hora conferida). Restam nomeadas como higiene decidida pelo titular:
+  4 pares de pontas mortas no estudo-facil e 2 no claustrum.
+- **Verde parcial do varredor:** emenda em curso no instrumento canônico (Dock Core) — varrer
+  árvore de cada ponta de ref, regra de escopo para refs de terceiro e agregação na saída;
+  até ela entrar, `auto=0` do `audita_estacao.sh` continua dizendo só o índice do branch checkout.
